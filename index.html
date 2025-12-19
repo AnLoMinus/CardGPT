@@ -1,0 +1,2020 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>🃏 CardGPT Studio PRO</title>
+  <style>
+    :root{
+      --bg0:#050614;
+      --bg1:#090b1f;
+      --glass: rgba(18, 22, 48, .72);
+      --glass2: rgba(10, 12, 28, .65);
+      --line: rgba(125, 249, 255, .22);
+      --cyan:#7df9ff;
+      --vio:#8a5cff;
+      --gold:#ffd36e;
+      --txt:#eaf2ff;
+      --mut:#a7b7ff;
+      --bad:#ff5c7c;
+      --ok:#42ffb0;
+      --warn:#ffd36e;
+      --shadow: 0 16px 50px rgba(0,0,0,.45);
+      --rad: 16px;
+      --rad2: 22px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --ui: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: var(--ui);
+      color:var(--txt);
+      background:
+        radial-gradient(900px 600px at 20% 0%, rgba(125,249,255,.16), transparent 60%),
+        radial-gradient(800px 520px at 85% 10%, rgba(138,92,255,.18), transparent 60%),
+        radial-gradient(900px 600px at 40% 90%, rgba(255,211,110,.10), transparent 65%),
+        linear-gradient(180deg, var(--bg1), var(--bg0));
+      min-height:100vh;
+    }
+
+    .topbar{
+      position: sticky; top:0; z-index:50;
+      backdrop-filter: blur(14px);
+      background: linear-gradient(180deg, rgba(8,10,22,.80), rgba(8,10,22,.55));
+      border-bottom: 1px solid rgba(125,249,255,.18);
+      padding: 14px 16px;
+    }
+    .topbar .row{
+      max-width: 1280px;
+      margin: 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      user-select:none;
+    }
+    .brand .logo{
+      width:42px; height:42px;
+      border-radius: 14px;
+      background:
+        radial-gradient(circle at 30% 20%, rgba(125,249,255,.85), transparent 50%),
+        radial-gradient(circle at 70% 70%, rgba(138,92,255,.85), transparent 50%),
+        linear-gradient(135deg, rgba(0,229,255,.35), rgba(124,77,255,.25));
+      box-shadow: 0 0 24px rgba(0,229,255,.18);
+      border:1px solid rgba(125,249,255,.25);
+    }
+    .brand .t{
+      display:flex; flex-direction:column; gap:2px;
+      line-height:1.1;
+    }
+    .brand .t b{
+      font-size: 16px;
+      color: var(--cyan);
+      text-shadow: 0 0 10px rgba(0,229,255,.22);
+      letter-spacing:.2px;
+    }
+    .brand .t span{
+      font-size: 12.5px;
+      color: rgba(234,242,255,.78);
+    }
+
+    .top-actions{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .pill{
+      display:flex; align-items:center; gap:8px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(10,12,28,.55);
+      border: 1px solid rgba(125,249,255,.16);
+      box-shadow: 0 8px 24px rgba(0,0,0,.22);
+      font-size: 12.5px;
+      color: rgba(234,242,255,.86);
+      user-select:none;
+    }
+    .pill .dot{
+      width:8px;height:8px;border-radius:50%;
+      background: var(--ok);
+      box-shadow: 0 0 14px rgba(66,255,176,.35);
+    }
+    .btn{
+      border:none;
+      cursor:pointer;
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: rgba(18,22,48,.66);
+      color: var(--txt);
+      border: 1px solid rgba(125,249,255,.18);
+      box-shadow: 0 12px 30px rgba(0,0,0,.25);
+      transition: transform .08s ease, filter .12s ease, opacity .12s ease;
+      display:inline-flex; align-items:center; gap:8px;
+      font-weight: 700;
+      font-size: 13px;
+      white-space:nowrap;
+    }
+    .btn:hover{ filter: brightness(1.05); transform: translateY(-1px); }
+    .btn:active{ transform: translateY(0px); opacity:.9; }
+    .btn.primary{
+      background: linear-gradient(90deg, rgba(0,229,255,.95), rgba(124,77,255,.95));
+      color:#06102a;
+      border:none;
+    }
+    .btn.warn{
+      background: linear-gradient(90deg, rgba(255,211,110,.95), rgba(255,92,124,.85));
+      color:#1a0710;
+      border:none;
+    }
+
+    .wrap{
+      max-width:1280px;
+      margin: 0 auto;
+      padding: 18px 16px 40px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 340px 1fr;
+      gap: 16px;
+      align-items:start;
+    }
+
+    .card{
+      background: var(--glass);
+      border:1px solid rgba(125,249,255,.18);
+      border-radius: var(--rad2);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding: 14px 14px 10px;
+      background: linear-gradient(180deg, rgba(125,249,255,.09), rgba(0,0,0,0));
+      border-bottom:1px solid rgba(125,249,255,.14);
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    .card .hd h3{
+      margin:0;
+      font-size: 14px;
+      letter-spacing:.2px;
+      color: rgba(234,242,255,.92);
+      display:flex; align-items:center; gap:8px;
+    }
+    .card .bd{ padding: 14px; }
+
+    .tabs{
+      display:flex; gap:8px; flex-wrap:wrap;
+    }
+    .tab{
+      padding: 8px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(125,249,255,.16);
+      background: rgba(10,12,28,.45);
+      color: rgba(234,242,255,.86);
+      cursor:pointer;
+      font-size: 12.5px;
+      font-weight: 800;
+      user-select:none;
+    }
+    .tab.active{
+      background: linear-gradient(90deg, rgba(0,229,255,.35), rgba(124,77,255,.25));
+      border-color: rgba(125,249,255,.30);
+      color: var(--cyan);
+      text-shadow: 0 0 10px rgba(0,229,255,.22);
+    }
+
+    label{
+      display:block;
+      margin: 10px 0 6px;
+      color: rgba(157,252,255,.92);
+      font-weight: 900;
+      font-size: 12.5px;
+    }
+    input, select, textarea{
+      width:100%;
+      padding: 10px 10px;
+      border-radius: 12px;
+      background: rgba(7,10,24,.85);
+      border: 1px solid rgba(125,249,255,.16);
+      color: var(--txt);
+      outline:none;
+      font-size: 13px;
+    }
+    textarea{ min-height: 92px; resize: vertical; }
+    .row2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    .row3{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:10px;
+    }
+    .hint{
+      font-size: 12px;
+      color: rgba(234,242,255,.70);
+      margin-top: 6px;
+      line-height: 1.35;
+    }
+
+    .mini-actions{
+      display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-start;
+      margin-top: 10px;
+    }
+    .mini{
+      padding: 9px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(125,249,255,.16);
+      background: rgba(10,12,28,.40);
+      color: rgba(234,242,255,.92);
+      cursor:pointer;
+      font-weight: 900;
+      font-size: 12px;
+      display:inline-flex; align-items:center; gap:8px;
+    }
+    .mini:hover{ filter:brightness(1.06); }
+
+    .split{
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 16px;
+      align-items:start;
+    }
+
+    .jsonbox{
+      background: rgba(5,6,20,.88);
+      border: 1px solid rgba(125,249,255,.16);
+      border-radius: var(--rad);
+      padding: 12px;
+      overflow:auto;
+      max-height: 420px;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.45;
+      color: var(--cyan);
+      white-space: pre;
+    }
+
+    .status{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      font-size: 12.5px;
+      color: rgba(234,242,255,.82);
+    }
+    .chip{
+      padding: 6px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(125,249,255,.16);
+      background: rgba(10,12,28,.45);
+      display:inline-flex; align-items:center; gap:7px;
+      font-weight: 900;
+      font-size: 12px;
+    }
+    .chip.good{ border-color: rgba(66,255,176,.30); }
+    .chip.bad{ border-color: rgba(255,92,124,.30); }
+    .chip .dot{
+      width:8px;height:8px;border-radius:50%;
+      background: var(--warn);
+      box-shadow: 0 0 14px rgba(255,211,110,.26);
+    }
+    .chip.good .dot{ background: var(--ok); box-shadow: 0 0 14px rgba(66,255,176,.26); }
+    .chip.bad .dot{ background: var(--bad); box-shadow: 0 0 14px rgba(255,92,124,.26); }
+
+    /* Library list */
+    .searchbar{
+      display:flex; gap:8px; flex-wrap:wrap;
+    }
+    .searchbar input{ flex:1; }
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top: 12px;
+      max-height: 520px;
+      overflow:auto;
+      padding-right: 2px;
+    }
+    .item{
+      border: 1px solid rgba(125,249,255,.14);
+      background: rgba(10,12,28,.50);
+      border-radius: 14px;
+      padding: 10px;
+      cursor:pointer;
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      justify-content:space-between;
+    }
+    .item:hover{ filter:brightness(1.04); }
+    .item.active{
+      border-color: rgba(125,249,255,.34);
+      box-shadow: 0 0 0 2px rgba(125,249,255,.10) inset;
+    }
+    .item b{ display:block; font-size: 13px; color: rgba(234,242,255,.96); }
+    .item small{ color: rgba(234,242,255,.70); font-size: 11.5px; }
+    .badge{
+      font-size: 11.5px;
+      padding: 6px 8px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(0,229,255,.18), rgba(124,77,255,.14));
+      border: 1px solid rgba(125,249,255,.18);
+      color: var(--cyan);
+      font-weight: 900;
+      white-space:nowrap;
+      height: fit-content;
+    }
+
+    /* Preview card */
+    .previewWrap{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    .preview{
+      border-radius: 20px;
+      border: 1px solid rgba(125,249,255,.18);
+      background:
+        radial-gradient(600px 380px at 30% 20%, rgba(125,249,255,.18), transparent 60%),
+        radial-gradient(560px 360px at 70% 80%, rgba(138,92,255,.18), transparent 60%),
+        linear-gradient(180deg, rgba(10,12,28,.65), rgba(5,6,20,.82));
+      box-shadow: var(--shadow);
+      padding: 14px;
+      position: relative;
+      overflow:hidden;
+    }
+    .preview:before{
+      content:"";
+      position:absolute; inset:-2px;
+      background: linear-gradient(90deg, rgba(0,229,255,.22), rgba(124,77,255,.18), rgba(255,211,110,.12));
+      filter: blur(18px);
+      opacity:.65;
+      pointer-events:none;
+    }
+    .pv-top{
+      position:relative;
+      display:flex; justify-content:space-between; gap:10px; align-items:flex-start;
+    }
+    .pv-title{
+      display:flex; flex-direction:column; gap:2px;
+    }
+    .pv-title b{
+      font-size: 16px;
+      color: rgba(234,242,255,.98);
+      letter-spacing:.2px;
+    }
+    .pv-title span{
+      font-size: 12px;
+      color: rgba(234,242,255,.78);
+    }
+    .pv-mid{
+      position:relative;
+      margin-top: 10px;
+      border-radius: 16px;
+      padding: 10px;
+      border: 1px solid rgba(125,249,255,.14);
+      background: rgba(10,12,28,.46);
+    }
+    .pv-mid p{
+      margin:0;
+      font-size: 12.5px;
+      line-height: 1.45;
+      color: rgba(234,242,255,.86);
+    }
+    .pv-abilities{
+      position:relative;
+      margin-top: 10px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .ab{
+      border-radius: 14px;
+      border: 1px solid rgba(125,249,255,.14);
+      background: rgba(7,10,24,.62);
+      padding: 10px;
+    }
+    .ab b{ display:block; font-size: 12.5px; color: var(--cyan); margin-bottom: 4px; }
+    .ab span{ display:block; font-size: 12px; color: rgba(234,242,255,.82); line-height:1.35; }
+
+    .pv-foot{
+      position:relative;
+      margin-top: 10px;
+      display:flex; gap:8px; flex-wrap:wrap;
+      align-items:center; justify-content:space-between;
+      color: rgba(234,242,255,.72);
+      font-size: 11.5px;
+    }
+
+    .hr{
+      height:1px;
+      background: rgba(125,249,255,.14);
+      margin: 12px 0;
+    }
+
+    .kbd{
+      font-family: var(--mono);
+      font-size: 11.5px;
+      padding: 3px 7px;
+      border-radius: 8px;
+      border: 1px solid rgba(125,249,255,.18);
+      background: rgba(10,12,28,.45);
+      color: rgba(234,242,255,.90);
+      white-space:nowrap;
+    }
+
+    .canvasBox{
+      border-radius: var(--rad);
+      border: 1px solid rgba(125,249,255,.16);
+      background: rgba(5,6,20,.72);
+      padding: 10px;
+      overflow:auto;
+    }
+    canvas{
+      width:100%;
+      max-width: 760px;
+      height:auto;
+      display:block;
+      border-radius: 14px;
+      border: 1px solid rgba(125,249,255,.12);
+      background: rgba(0,0,0,.15);
+    }
+
+    .toast{
+      position: fixed;
+      bottom: 16px;
+      left: 16px;
+      z-index: 999;
+      background: rgba(10,12,28,.86);
+      border: 1px solid rgba(125,249,255,.18);
+      border-radius: 14px;
+      padding: 10px 12px;
+      box-shadow: var(--shadow);
+      display:none;
+      max-width: 420px;
+      color: rgba(234,242,255,.92);
+      font-size: 13px;
+      line-height: 1.35;
+      backdrop-filter: blur(14px);
+    }
+    .toast.show{ display:block; }
+
+    .muted{ color: rgba(234,242,255,.74); }
+    .small{ font-size: 12px; }
+    .danger{ color: var(--bad); font-weight: 900; }
+    .good{ color: var(--ok); font-weight: 900; }
+
+    @media (max-width: 1050px){
+      .grid{ grid-template-columns: 1fr; }
+      .split{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="row">
+      <div class="brand">
+        <div class="logo"></div>
+        <div class="t">
+          <b>🃏 CardGPT Studio PRO</b>
+          <span>⚡ אפיון • ספרייה • תבניות • ייצוא JSON/PNG • עבודה מהירה</span>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <div class="pill" title="סטטוס מערכת">
+          <span class="dot"></span>
+          <span id="sysStatus">Ready</span>
+        </div>
+        <button class="btn" id="btnNew">🆕 קלף חדש</button>
+        <button class="btn primary" id="btnSave">💾 שמור לספרייה</button>
+        <button class="btn" id="btnCopy">📋 Copy JSON</button>
+        <button class="btn" id="btnPNG">🖼️ יצוא PNG</button>
+        <button class="btn warn" id="btnExportAll">📦 יצוא כל הספרייה</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="grid">
+      <!-- LEFT: LIBRARY + TEMPLATES -->
+      <aside class="card">
+        <div class="hd">
+          <h3>📚 ספריית קלפים</h3>
+          <div class="tabs">
+            <div class="tab active" data-lefttab="library">📚</div>
+            <div class="tab" data-lefttab="templates">🧬</div>
+            <div class="tab" data-lefttab="import">📥</div>
+          </div>
+        </div>
+
+        <div class="bd" id="left_library">
+          <div class="searchbar">
+            <input id="q" placeholder="🔎 חפש לפי שם / סוג / אנרגיה / תגיות…" />
+            <select id="filterType" style="max-width: 140px;">
+              <option value="">🗂️ הכל</option>
+              <option>Character</option>
+              <option>Gate</option>
+              <option>Power</option>
+              <option>State</option>
+              <option>Artifact</option>
+            </select>
+          </div>
+
+          <div class="hint">
+            🧠 טיפ: לחץ על קלף כדי לטעון לעריכה. <span class="kbd">Ctrl</span>+<span class="kbd">S</span> לשמירה •
+            <span class="kbd">Ctrl</span>+<span class="kbd">N</span> חדש • <span class="kbd">Ctrl</span>+<span class="kbd">E</span> יצוא
+          </div>
+
+          <div class="list" id="libraryList"></div>
+
+          <div class="mini-actions">
+            <button class="mini" id="btnDuplicate">🧿 שכפל</button>
+            <button class="mini" id="btnDelete">🗑️ מחק</button>
+            <button class="mini" id="btnExportOne">📤 יצוא קלף</button>
+          </div>
+
+          <div class="hr"></div>
+          <div class="status">
+            <span class="chip good"><span class="dot"></span> נשמרים: <span id="countCards">0</span></span>
+            <span class="chip"><span class="dot"></span> Draft: <span id="draftState">Idle</span></span>
+            <span class="chip"><span class="dot"></span> Active ID: <span id="activeId">—</span></span>
+          </div>
+        </div>
+
+        <div class="bd" id="left_templates" style="display:none;">
+          <div class="hint">🧬 בחר תבנית כדי להטעין אפיון התחלתי חזק (ואז תבנה משם).</div>
+          <div class="list" id="tplList"></div>
+        </div>
+
+        <div class="bd" id="left_import" style="display:none;">
+          <label>📥 הדבק כאן JSON לייבוא (קלף אחד או מערך קלפים)</label>
+          <textarea id="importBox" placeholder='[ { ... }, { ... } ] או { ... }'></textarea>
+          <div class="mini-actions">
+            <button class="mini" id="btnImport">📥 יבוא לספרייה</button>
+            <button class="mini" id="btnClearImport">🧽 נקה</button>
+          </div>
+
+          <div class="hr"></div>
+          <label>📌 אפשרות: העלאת קובץ JSON</label>
+          <input id="fileInput" type="file" accept=".json,application/json"/>
+          <div class="hint">📎 בחר קובץ → המערכת תטען אותו לתיבת הייבוא, ואז לחץ “יבוא”.</div>
+        </div>
+      </aside>
+
+      <!-- RIGHT: EDITOR + OUTPUT + PREVIEW -->
+      <section class="card">
+        <div class="hd">
+          <h3>🛠️ אפיון קלף (Card Blueprint)</h3>
+          <div class="tabs">
+            <div class="tab active" data-righttab="editor">🛠️</div>
+            <div class="tab" data-righttab="preview">🪞</div>
+            <div class="tab" data-righttab="export">📤</div>
+            <div class="tab" data-righttab="settings">⚙️</div>
+          </div>
+        </div>
+
+        <div class="bd" id="right_editor">
+          <div class="split">
+            <!-- Editor -->
+            <div>
+              <div class="row3">
+                <div>
+                  <label>🆔 Card ID</label>
+                  <input id="card_id" placeholder="AUTO" />
+                  <div class="hint">⚡ מומלץ להשאיר ריק → נוצר אוטומטית.</div>
+                </div>
+                <div>
+                  <label>🗂️ Series</label>
+                  <input id="card_series" placeholder="Holly Trap Flow" />
+                </div>
+                <div>
+                  <label>🧩 Type</label>
+                  <select id="card_type">
+                    <option>Character</option>
+                    <option>Gate</option>
+                    <option>Power</option>
+                    <option>State</option>
+                    <option>Artifact</option>
+                  </select>
+                </div>
+              </div>
+
+              <label>🃏 Card Name</label>
+              <input id="card_name" placeholder="Leon Yaakobov" />
+
+              <div class="row2">
+                <div>
+                  <label>🪪 Alias / Title</label>
+                  <input id="card_alias" placeholder="The Conductor of Light" />
+                </div>
+                <div>
+                  <label>⚡ Core Energy</label>
+                  <input id="core_energy" placeholder="Holly Trap Flow" />
+                </div>
+              </div>
+
+              <div class="row3">
+                <div>
+                  <label>🌈 Element</label>
+                  <input id="element" placeholder="Electric / Light" />
+                </div>
+                <div>
+                  <label>💎 Rarity</label>
+                  <select id="rarity">
+                    <option>Common</option>
+                    <option>Uncommon</option>
+                    <option>Rare</option>
+                    <option>Epic</option>
+                    <option selected>Legendary</option>
+                    <option>Mythic</option>
+                  </select>
+                </div>
+                <div>
+                  <label>🧭 Alignment</label>
+                  <input id="alignment" placeholder="Light-Tech" />
+                </div>
+              </div>
+
+              <label>📜 Lore / Description</label>
+              <textarea id="lore_description" placeholder="תיאור עולם, אופי, תפקיד…"></textarea>
+
+              <div class="row2">
+                <div>
+                  <label>🧠 Personality</label>
+                  <input id="personality" placeholder="Mysterious, enlightened, cryptic" />
+                </div>
+                <div>
+                  <label>🛡️ Role</label>
+                  <input id="role" placeholder="Conductor & Guardian of the Light Gates" />
+                </div>
+              </div>
+
+              <label>🌍 Scenario / World Context</label>
+              <textarea id="world_context" placeholder="In a shattered world where light and energy are worshipped…"></textarea>
+
+              <div class="row2">
+                <div>
+                  <label>🎬 Activation Trigger</label>
+                  <input id="trigger" placeholder="User enters darkness / seeks guidance" />
+                </div>
+                <div>
+                  <label>✨ Activation Effect</label>
+                  <input id="effect" placeholder="Opens Light Gates" />
+                </div>
+              </div>
+
+              <label>🗣️ First Message</label>
+              <input id="first_message" placeholder="Welcome To Holly Trap" />
+
+              <label>🧾 Dialogue Style</label>
+              <input id="dialogue_style" placeholder="Riddles + futuristic logic" />
+
+              <label>💬 Dialogue Examples (שורה לכל משפט)</label>
+              <textarea id="dialogue_examples" placeholder="Your signal pulses in sync with the Holly Trap.
+The Light Gates have chosen you."></textarea>
+
+              <div class="hr"></div>
+
+              <h4 style="margin:0 0 8px; color: var(--cyan);">⚔️ Abilities Builder</h4>
+              <div class="row2">
+                <div>
+                  <label>🌀 Ability Name</label>
+                  <input id="ab_name" placeholder="Holly Trap Flow" />
+                </div>
+                <div>
+                  <label>🎛️ Ability Type</label>
+                  <select id="ab_type">
+                    <option>Passive</option>
+                    <option selected>Active</option>
+                    <option>Ultimate</option>
+                    <option>Reaction</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row3">
+                <div>
+                  <label>💠 Cost</label>
+                  <input id="ab_cost" placeholder="0 / 10 / Mana / Voltage" />
+                </div>
+                <div>
+                  <label>⏱️ Cooldown</label>
+                  <input id="ab_cd" placeholder="0s / 12s / 1 turn" />
+                </div>
+                <div>
+                  <label>🎯 Target</label>
+                  <input id="ab_target" placeholder="Self / Ally / Area / Gate" />
+                </div>
+              </div>
+              <label>📌 Ability Effect</label>
+              <textarea id="ab_effect" placeholder="Activates dimensional light circuits around the user…"></textarea>
+
+              <div class="mini-actions">
+                <button class="mini" id="btnAddAbility">➕ הוסף יכולת</button>
+                <button class="mini" id="btnClearAbilities">🧽 נקה יכולות</button>
+              </div>
+
+              <div class="hint">⚡ היכולות נשמרות ברשימה. אפשר למחוק אחת אחת מתצוגת JSON (בקרוב כפתור UI למחיקה פר־יכולת).</div>
+
+              <div class="hr"></div>
+
+              <h4 style="margin:0 0 8px; color: var(--cyan);">🎨 Visual DNA</h4>
+              <div class="row2">
+                <div>
+                  <label>🥋 Outfit</label>
+                  <input id="outfit" placeholder="Cybernetic robes with pulsating light wires" />
+                </div>
+                <div>
+                  <label>🌟 Aura</label>
+                  <input id="aura" placeholder="Electric glow, light circuits" />
+                </div>
+              </div>
+
+              <div class="row3">
+                <div>
+                  <label>🎨 Palette 1</label>
+                  <input id="pal1" placeholder="Neon Blue" />
+                </div>
+                <div>
+                  <label>🎨 Palette 2</label>
+                  <input id="pal2" placeholder="Electric Gold" />
+                </div>
+                <div>
+                  <label>🎨 Palette 3</label>
+                  <input id="pal3" placeholder="Deep Black" />
+                </div>
+              </div>
+
+              <label>🧠 Art Prompt (לתמונה)</label>
+              <textarea id="art_prompt" placeholder="Cyber-mystic character, electric aura, glowing wires, cinematic lighting…"></textarea>
+
+              <div class="row2">
+                <div>
+                  <label>🏷️ Tags (מופרד בפסיקים)</label>
+                  <input id="tags" placeholder="Fantasy, Sci-Fi, Cyber-Mystic, SFW" />
+                </div>
+                <div>
+                  <label>🧾 Version</label>
+                  <input id="version" placeholder="1.0" />
+                </div>
+              </div>
+
+              <label>📝 Changelog (מה השתנה בגרסה)</label>
+              <textarea id="changelog" placeholder="Added new ability, refined lore, updated palette…"></textarea>
+
+              <div class="mini-actions">
+                <button class="mini" id="btnGenerate">⚡ בנה JSON</button>
+                <button class="mini" id="btnValidate">✅ בדיקת חובה</button>
+                <button class="mini" id="btnIncVer">🔼 העלה גרסה</button>
+              </div>
+
+              <div class="hint">
+                ✅ שדות חובה: <b>Name</b>, <b>Type</b>, <b>Core Energy</b>, <b>Series</b> •
+                💾 Auto-Draft נשמר מקומית כל כמה שניות.
+              </div>
+            </div>
+
+            <!-- Output / Preview quick -->
+            <div class="previewWrap">
+              <div class="preview" id="previewBox">
+                <div class="pv-top">
+                  <div class="pv-title">
+                    <b id="pv_name">—</b>
+                    <span id="pv_sub">—</span>
+                  </div>
+                  <div class="badge" id="pv_badge">—</div>
+                </div>
+
+                <div class="pv-mid">
+                  <p id="pv_desc">התחל למלא שדות → ה-Preview יתעורר ⚡</p>
+                </div>
+
+                <div class="pv-abilities" id="pv_abilities"></div>
+
+                <div class="pv-foot">
+                  <span id="pv_meta">—</span>
+                  <span id="pv_time">—</span>
+                </div>
+              </div>
+
+              <div>
+                <div class="hd" style="padding:10px 12px; border-radius: 16px; border:1px solid rgba(125,249,255,.14); background: rgba(10,12,28,.35);">
+                  <h3 style="margin:0; font-size: 13px;">📜 JSON Live</h3>
+                  <div class="mini-actions" style="margin:0;">
+                    <button class="mini" id="btnMinCopy">📋</button>
+                    <button class="mini" id="btnMinDownload">💾</button>
+                  </div>
+                </div>
+                <div class="jsonbox" id="jsonOut">{}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bd" id="right_preview" style="display:none;">
+          <div class="hint">🪞 כאן תראה תצוגת קלף + תמונת Canvas לייצוא PNG.</div>
+          <div class="split">
+            <div>
+              <div class="preview" style="min-height: 220px;">
+                <div class="pv-top">
+                  <div class="pv-title">
+                    <b id="pv2_name">—</b>
+                    <span id="pv2_sub">—</span>
+                  </div>
+                  <div class="badge" id="pv2_badge">—</div>
+                </div>
+                <div class="pv-mid"><p id="pv2_desc">—</p></div>
+                <div class="pv-abilities" id="pv2_abilities"></div>
+                <div class="pv-foot">
+                  <span id="pv2_meta">—</span>
+                  <span id="pv2_time">—</span>
+                </div>
+              </div>
+
+              <div class="hr"></div>
+
+              <div class="mini-actions">
+                <button class="mini" id="btnRenderCanvas">🎨 רנדר Canvas</button>
+                <button class="mini" id="btnDownloadCanvas">🖼️ הורד PNG</button>
+              </div>
+
+              <div class="hint">
+                🖼️ ה-Canvas מייצר תמונת קלף בסיסית ויפה, בלי ספריות חיצוניות.  
+                בהמשך אפשר לשדרג ל-Artwork מלא או שכבות מתקדמות.
+              </div>
+            </div>
+
+            <div class="canvasBox">
+              <canvas id="cardCanvas" width="1600" height="900"></canvas>
+              <div class="hint small">📐 1600×900 • מתאים לייצוא מהיר. אפשר לשנות ב-Settings.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bd" id="right_export" style="display:none;">
+          <h3 style="margin:0 0 10px; color: var(--cyan);">📤 יצוא / שיתוף</h3>
+          <div class="hint">📦 יצוא קלף יחיד או כל הספרייה — קבצי JSON שנוחים לגיבוי, שיתוף, והזנה למחוללים אחרים.</div>
+
+          <div class="mini-actions">
+            <button class="mini" id="btnDownloadOne">📤 הורד קלף JSON</button>
+            <button class="mini" id="btnDownloadAll">📦 הורד ספרייה JSON</button>
+            <button class="mini" id="btnCopyAll">📋 העתק ספרייה JSON</button>
+          </div>
+
+          <div class="hr"></div>
+
+          <label>🧾 Library JSON (קריאה בלבד)</label>
+          <div class="jsonbox" id="libraryDump">[]</div>
+        </div>
+
+        <div class="bd" id="right_settings" style="display:none;">
+          <h3 style="margin:0 0 10px; color: var(--cyan);">⚙️ Settings</h3>
+          <div class="row3">
+            <div>
+              <label>🖼️ Canvas Width</label>
+              <input id="set_cw" type="number" value="1600"/>
+            </div>
+            <div>
+              <label>🖼️ Canvas Height</label>
+              <input id="set_ch" type="number" value="900"/>
+            </div>
+            <div>
+              <label>💾 Auto-Draft (שניות)</label>
+              <input id="set_autodraft" type="number" value="3"/>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="mini-actions">
+            <button class="mini" id="btnApplySettings">✅ החל הגדרות</button>
+            <button class="mini" id="btnClearDraft">🧽 מחק Draft</button>
+            <button class="mini" id="btnClearLibrary">🧨 נקה ספרייה</button>
+          </div>
+
+          <div class="hint">
+            🧨 “נקה ספרייה” מוחק את כל הקלפים מהדפדפן (LocalStorage).  
+            📦 לפני מחיקה — בצע יצוא ספרייה.
+          </div>
+
+          <div class="hr"></div>
+          <h4 style="margin:0 0 8px; color: rgba(234,242,255,.92);">🧾 Credits</h4>
+          <div class="hint small">
+            🔗 מקורות טכניים (תיעוד שימושי):  
+            • Canvas API: https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API  
+            • LocalStorage: https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage  
+            • File/Blob Download: https://developer.mozilla.org/en-US/docs/Web/API/Blob  
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section class="card" style="margin-top:16px;">
+      <div class="hd">
+        <h3>📅 חותמת יצירה • 🧾 נתונים</h3>
+      </div>
+      <div class="bd">
+        <div class="status">
+          <span class="chip good"><span class="dot"></span> תאריך לועזי: <b>19.12.2025</b></span>
+          <span class="chip good"><span class="dot"></span> תאריך עברי: <b>כ״ט כסלו תשפ״ו</b></span>
+          <span class="chip"><span class="dot"></span> שעה: <b id="nowTime">—</b></span>
+          <span class="chip"><span class="dot"></span> אזור זמן: <b>Asia/Jerusalem</b></span>
+        </div>
+      </div>
+    </section>
+
+    <div class="toast" id="toast"></div>
+  </main>
+
+<script>
+/* =========================
+   CardGPT Studio PRO
+   ========================= */
+
+/* ---------- Storage Keys ---------- */
+const K_LIBRARY = "cardgpt_library_v1";
+const K_DRAFT   = "cardgpt_draft_v1";
+const K_ACTIVE  = "cardgpt_active_id_v1";
+const K_SETTINGS= "cardgpt_settings_v1";
+
+/* ---------- In-memory state ---------- */
+let library = [];
+let activeId = null;
+let abilities = [];
+
+/* ---------- Settings ---------- */
+let settings = {
+  canvasW: 1600,
+  canvasH: 900,
+  autoDraftSeconds: 3
+};
+
+/* ---------- Helpers ---------- */
+const $ = (id)=>document.getElementById(id);
+
+function toast(msg){
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), 2400);
+}
+function setStatus(s){
+  $("sysStatus").textContent = s;
+}
+function nowISO(){
+  return new Date().toISOString();
+}
+function safeTrim(s){ return (s ?? "").toString().trim(); }
+function splitCSV(s){
+  return safeTrim(s).length ? safeTrim(s).split(",").map(x=>x.trim()).filter(Boolean) : [];
+}
+function genId(prefix="CARD"){
+  const rnd = Math.floor(Math.random()*90000)+10000;
+  const t = Date.now().toString().slice(-6);
+  return `${prefix}-${t}-${rnd}`;
+}
+function downloadText(filename, text, mime="application/json"){
+  const blob = new Blob([text], {type:mime});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+function copyToClipboard(text){
+  navigator.clipboard.writeText(text);
+  toast("📋 הועתק ללוח!");
+}
+function clamp(s, n=160){
+  s = safeTrim(s);
+  if(!s) return "—";
+  return s.length>n ? s.slice(0,n-1)+"…" : s;
+}
+
+/* ---------- UI Tab Logic ---------- */
+function switchLeftTab(name){
+  ["library","templates","import"].forEach(x=>{
+    document.querySelectorAll(`[data-lefttab="${x}"]`).forEach(el=>{
+      el.classList.toggle("active", x===name);
+    });
+    $(`left_${x}`).style.display = (x===name) ? "" : "none";
+  });
+}
+function switchRightTab(name){
+  ["editor","preview","export","settings"].forEach(x=>{
+    document.querySelectorAll(`[data-righttab="${x}"]`).forEach(el=>{
+      el.classList.toggle("active", x===name);
+    });
+    $(`right_${x}`).style.display = (x===name) ? "" : "none";
+  });
+
+  if(name==="export"){
+    refreshLibraryDump();
+  }
+  if(name==="preview"){
+    renderPreview2();
+  }
+}
+
+/* ---------- Build Card Object ---------- */
+function buildCardFromForm(){
+  const id = safeTrim($("card_id").value) || genId("HG");
+  const card = {
+    spec: "cardgpt_card_v1",
+    spec_version: "1.0",
+    card_id: id,
+    card_series: safeTrim($("card_series").value),
+    card_type: $("card_type").value,
+    card_name: safeTrim($("card_name").value),
+    card_alias: safeTrim($("card_alias").value),
+    element: safeTrim($("element").value),
+    rarity: $("rarity").value,
+    alignment: safeTrim($("alignment").value),
+    core_energy: safeTrim($("core_energy").value),
+
+    lore: {
+      description: safeTrim($("lore_description").value),
+      personality: safeTrim($("personality").value),
+      role: safeTrim($("role").value),
+      world_context: safeTrim($("world_context").value)
+    },
+
+    activation: {
+      trigger: safeTrim($("trigger").value),
+      effect: safeTrim($("effect").value),
+      quote: safeTrim($("first_message").value)
+    },
+
+    interaction: {
+      first_message: safeTrim($("first_message").value),
+      dialogue_style: safeTrim($("dialogue_style").value),
+      dialogue_examples: safeTrim($("dialogue_examples").value).split("\n").map(x=>x.trim()).filter(Boolean)
+    },
+
+    abilities: abilities.map(a=>({ ...a })),
+
+    visual_style: {
+      outfit: safeTrim($("outfit").value),
+      aura: safeTrim($("aura").value),
+      color_palette: [safeTrim($("pal1").value), safeTrim($("pal2").value), safeTrim($("pal3").value)].filter(Boolean),
+      art_prompt: safeTrim($("art_prompt").value)
+    },
+
+    meta: {
+      creator: "AnLoMinus",
+      engine: "CardGPT Studio PRO",
+      version: safeTrim($("version").value) || "1.0",
+      tags: splitCSV($("tags").value),
+      changelog: safeTrim($("changelog").value),
+      created_at: nowISO(),
+      updated_at: nowISO()
+    }
+  };
+
+  return card;
+}
+
+/* ---------- Validate ---------- */
+function validateCard(card){
+  const problems = [];
+  if(!safeTrim(card.card_name)) problems.push("🃏 חסר Card Name");
+  if(!safeTrim(card.card_series)) problems.push("🗂️ חסר Series");
+  if(!safeTrim(card.core_energy)) problems.push("⚡ חסר Core Energy");
+
+  return problems;
+}
+
+/* ---------- JSON Live + Preview ---------- */
+function refreshJSONLive(){
+  const card = buildCardFromForm();
+  const problems = validateCard(card);
+  const ok = problems.length===0;
+
+  $("jsonOut").textContent = JSON.stringify(card, null, 2);
+  $("activeId").textContent = card.card_id || "—";
+
+  // chips
+  $("draftState").textContent = $("draftState").textContent || "Idle";
+  setStatus(ok ? "Ready" : "Needs Fields");
+
+  // Preview 1
+  $("pv_name").textContent = card.card_name || "—";
+  $("pv_sub").textContent = `${card.card_type || "—"} • ${card.card_series || "—"} • ${card.core_energy || "—"}`;
+  $("pv_badge").textContent = `${card.rarity || "—"} • ${card.alignment || "—"}`;
+  $("pv_desc").textContent = clamp(card.lore.description || card.lore.world_context || "התחל למלא Lore…", 240);
+  $("pv_meta").textContent = `🆔 ${card.card_id} • v${card.meta.version}`;
+  $("pv_time").textContent = new Date().toLocaleString("he-IL", {dateStyle:"medium", timeStyle:"short"});
+
+  // Abilities preview
+  const abWrap = $("pv_abilities");
+  abWrap.innerHTML = "";
+  const abShow = card.abilities.slice(0,4);
+  if(abShow.length===0){
+    abWrap.innerHTML = `<div class="ab" style="grid-column:1/-1;"><b>⚔️ Abilities</b><span class="muted">הוסף יכולת כדי להציג כאן.</span></div>`;
+  } else {
+    abShow.forEach(a=>{
+      const div = document.createElement("div");
+      div.className="ab";
+      div.innerHTML = `<b>⚔️ ${a.name || "Ability"}</b><span>${clamp(a.effect || "—", 120)}</span>`;
+      abWrap.appendChild(div);
+    });
+  }
+
+  // Quick validation toast hint (silent)
+  const chips = document.querySelectorAll(".chip");
+  chips.forEach(c=>{
+    // no-op (styling reserved)
+  });
+
+  return {card, problems};
+}
+
+function renderPreview2(){
+  const {card} = refreshJSONLive();
+  $("pv2_name").textContent = card.card_name || "—";
+  $("pv2_sub").textContent = `${card.card_type || "—"} • ${card.card_series || "—"} • ${card.core_energy || "—"}`;
+  $("pv2_badge").textContent = `${card.rarity || "—"} • ${card.alignment || "—"}`;
+  $("pv2_desc").textContent = clamp(card.lore.description || card.lore.world_context || "—", 320);
+  $("pv2_meta").textContent = `🆔 ${card.card_id} • v${card.meta.version} • 🏷️ ${card.meta.tags.join(", ") || "—"}`;
+  $("pv2_time").textContent = new Date().toLocaleString("he-IL", {dateStyle:"full", timeStyle:"medium"});
+
+  const wrap = $("pv2_abilities");
+  wrap.innerHTML = "";
+  const abShow = card.abilities.slice(0,6);
+  if(abShow.length===0){
+    wrap.innerHTML = `<div class="ab" style="grid-column:1/-1;"><b>⚔️ Abilities</b><span class="muted">עדיין אין יכולות.</span></div>`;
+  }else{
+    abShow.forEach(a=>{
+      const div = document.createElement("div");
+      div.className="ab";
+      const info = [a.type, a.cost ? `Cost: ${a.cost}` : "", a.cooldown ? `CD: ${a.cooldown}` : ""].filter(Boolean).join(" • ");
+      div.innerHTML = `<b>⚔️ ${a.name || "Ability"}</b><span class="muted small">${info || ""}</span><span>${clamp(a.effect || "—", 150)}</span>`;
+      wrap.appendChild(div);
+    });
+  }
+}
+
+/* ---------- Library ---------- */
+function loadLibrary(){
+  try{
+    library = JSON.parse(localStorage.getItem(K_LIBRARY) || "[]");
+    if(!Array.isArray(library)) library = [];
+  }catch{ library = []; }
+  $("countCards").textContent = library.length.toString();
+}
+function saveLibrary(){
+  localStorage.setItem(K_LIBRARY, JSON.stringify(library));
+  $("countCards").textContent = library.length.toString();
+}
+function upsertCard(card){
+  const idx = library.findIndex(x=>x.card_id===card.card_id);
+  if(idx>=0){
+    card.meta.updated_at = nowISO();
+    library[idx] = card;
+  }else{
+    library.unshift(card);
+  }
+  saveLibrary();
+  renderLibrary();
+}
+function renderLibrary(){
+  const q = safeTrim($("q").value).toLowerCase();
+  const ft = $("filterType").value;
+
+  const list = $("libraryList");
+  list.innerHTML = "";
+
+  const filtered = library.filter(c=>{
+    if(ft && c.card_type!==ft) return false;
+    if(!q) return true;
+    const hay = [
+      c.card_name, c.card_type, c.card_series, c.core_energy,
+      (c.meta?.tags||[]).join(" "),
+      c.element, c.alignment, c.rarity
+    ].join(" ").toLowerCase();
+    return hay.includes(q);
+  });
+
+  if(filtered.length===0){
+    list.innerHTML = `<div class="muted small">אין תוצאות. צור קלף חדש או החלף חיפוש.</div>`;
+    return;
+  }
+
+  filtered.forEach(c=>{
+    const div = document.createElement("div");
+    div.className = "item" + (c.card_id===activeId ? " active" : "");
+    div.onclick = ()=> loadToForm(c.card_id);
+    div.innerHTML = `
+      <div>
+        <b>🃏 ${c.card_name || "Unnamed"}</b>
+        <small>🧩 ${c.card_type} • 🗂️ ${c.card_series || "—"} • ⚡ ${c.core_energy || "—"}</small><br/>
+        <small class="muted">🆔 ${c.card_id} • v${c.meta?.version || "1.0"}</small>
+      </div>
+      <div class="badge">${c.rarity || "—"}</div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function loadToForm(id){
+  const c = library.find(x=>x.card_id===id);
+  if(!c) return;
+
+  activeId = c.card_id;
+  localStorage.setItem(K_ACTIVE, activeId);
+
+  // Basic
+  $("card_id").value = c.card_id || "";
+  $("card_series").value = c.card_series || "";
+  $("card_type").value = c.card_type || "Character";
+  $("card_name").value = c.card_name || "";
+  $("card_alias").value = c.card_alias || "";
+  $("element").value = c.element || "";
+  $("rarity").value = c.rarity || "Legendary";
+  $("alignment").value = c.alignment || "";
+  $("core_energy").value = c.core_energy || "";
+
+  // Lore
+  $("lore_description").value = c.lore?.description || "";
+  $("personality").value = c.lore?.personality || "";
+  $("role").value = c.lore?.role || "";
+  $("world_context").value = c.lore?.world_context || "";
+
+  // Activation / interaction
+  $("trigger").value = c.activation?.trigger || "";
+  $("effect").value = c.activation?.effect || "";
+  $("first_message").value = c.interaction?.first_message || c.activation?.quote || "";
+  $("dialogue_style").value = c.interaction?.dialogue_style || "";
+  $("dialogue_examples").value = (c.interaction?.dialogue_examples || []).join("\n");
+
+  // Abilities
+  abilities = Array.isArray(c.abilities) ? c.abilities.map(x=>({...x})) : [];
+
+  // Visual
+  $("outfit").value = c.visual_style?.outfit || "";
+  $("aura").value = c.visual_style?.aura || "";
+  $("pal1").value = c.visual_style?.color_palette?.[0] || "";
+  $("pal2").value = c.visual_style?.color_palette?.[1] || "";
+  $("pal3").value = c.visual_style?.color_palette?.[2] || "";
+  $("art_prompt").value = c.visual_style?.art_prompt || "";
+
+  // Meta
+  $("tags").value = (c.meta?.tags || []).join(", ");
+  $("version").value = c.meta?.version || "1.0";
+  $("changelog").value = c.meta?.changelog || "";
+
+  refreshJSONLive();
+  renderLibrary();
+  toast("🧠 נטען לעריכה");
+}
+
+/* ---------- Templates ---------- */
+const TEMPLATES = [
+  {
+    name: "⚡ Leon • Cyber-Mystic Conductor",
+    data: {
+      card_series:"Holly Trap Flow",
+      card_type:"Character",
+      card_name:"Leon Yaakobov",
+      card_alias:"The Conductor of Light",
+      element:"Electric / Light",
+      rarity:"Legendary",
+      alignment:"Light-Tech",
+      core_energy:"Holly Trap Flow",
+      lore_description:"Leon is the embodiment of mystic energy and futuristic design. Cloaked in cybernetic robes laced with pulsating light wires, his presence activates the Holly Trap Flow—an electrical current said to open dimensional gates of light.",
+      personality:"Mysterious and enlightened",
+      role:"Conductor & Guardian of the Light Gates",
+      world_context:"In a shattered world where light and energy are worshipped, Leon appears to those lost in the dark and guides them through the Light Gates.",
+      trigger:"User enters darkness / seeks guidance",
+      effect:"Opens Light Gates",
+      first_message:"Welcome To Holly Trap",
+      dialogue_style:"Riddles + futuristic logic",
+      dialogue_examples:"Your signal… it pulses in sync with the Holly Trap.\nThe Light Gates have chosen you.\nStep forward. The threshold reacts to your presence.",
+      outfit:"Cybernetic robes with pulsating light wires",
+      aura:"Electric glow, light circuits",
+      pal1:"Neon Blue",
+      pal2:"Electric Gold",
+      pal3:"Deep Black",
+      tags:"Fantasy, Sci-Fi, SFW, Cyber-Mystic",
+      version:"1.0",
+      changelog:"Initial template load"
+    },
+    abilities: [
+      {name:"Holly Trap Flow", type:"Passive", cost:"0", cooldown:"—", target:"Area", effect:"Activates dimensional light circuits around the chosen one, stabilizing the gate-field."},
+      {name:"Gate Conduction", type:"Active", cost:"10 Voltage", cooldown:"12s", target:"Gate", effect:"Opens a Light Gate path and guides the user through the threshold without collapse."}
+    ]
+  },
+  {
+    name:"🚪 Gate • Light Gate Threshold",
+    data:{
+      card_series:"Holly Trap Flow",
+      card_type:"Gate",
+      card_name:"Light Gate Threshold",
+      card_alias:"The Luminous Border",
+      element:"Light",
+      rarity:"Epic",
+      alignment:"Light-Tech",
+      core_energy:"Threshold Resonance",
+      lore_description:"A living border between worlds. It reacts to intention and frequency — not to force.",
+      personality:"Silent, reactive, sacred-tech",
+      role:"Dimensional checkpoint",
+      world_context:"When the world fractures, gates become religions. Some open only for the chosen signal.",
+      trigger:"Signal aligns with Resonance",
+      effect:"Opens path / repels corruption",
+      first_message:"The Light Gate is listening…",
+      dialogue_style:"Short, sacred, technical",
+      dialogue_examples:"Alignment detected.\nResonance rising.\nProceed with intent.",
+      outfit:"—",
+      aura:"Prismatic halo",
+      pal1:"Prism White",
+      pal2:"Holo Gold",
+      pal3:"Void Black",
+      tags:"Gate, Light, Sci-Fi, Mystic",
+      version:"1.0",
+      changelog:"Gate template"
+    },
+    abilities:[
+      {name:"Resonance Scan", type:"Passive", cost:"0", cooldown:"—", target:"Self", effect:"Continuously checks alignment and blocks hostile frequencies."},
+      {name:"Prism Passage", type:"Active", cost:"1 Charge", cooldown:"1 turn", target:"Ally", effect:"Allows a single safe crossing while sealing behind."}
+    ]
+  },
+  {
+    name:"🧠 State • Hyper Focus Circuit",
+    data:{
+      card_series:"Holly Trap Flow",
+      card_type:"State",
+      card_name:"Hyper Focus Circuit",
+      card_alias:"Mind as a Circuit",
+      element:"Electric / Mind",
+      rarity:"Rare",
+      alignment:"Tech-Ascension",
+      core_energy:"Cognitive Voltage",
+      lore_description:"A state where attention becomes a laser. Noise drops. Signal becomes destiny.",
+      personality:"Cold clarity, sacred precision",
+      role:"Focus amplifier",
+      world_context:"In the ruins, the one who controls attention controls reality.",
+      trigger:"User enters mission mode",
+      effect:"Boost precision / reduce distraction",
+      first_message:"Noise lowered. Signal locked.",
+      dialogue_style:"Minimal, surgical, rhythmic",
+      dialogue_examples:"Lock target.\nReduce noise.\nExecute flow.",
+      outfit:"—",
+      aura:"Electric ring around the head",
+      pal1:"Ice Cyan",
+      pal2:"Violet Pulse",
+      pal3:"Graphite",
+      tags:"State, Focus, Cyber",
+      version:"1.0",
+      changelog:"State template"
+    },
+    abilities:[
+      {name:"Signal Lock", type:"Active", cost:"5 Voltage", cooldown:"8s", target:"Self", effect:"Boosts accuracy and decision speed while reducing distraction."},
+      {name:"Noise Cancel", type:"Passive", cost:"0", cooldown:"—", target:"Self", effect:"Filters distractions and keeps the core path stable."}
+    ]
+  }
+];
+
+function renderTemplates(){
+  const list = $("tplList");
+  list.innerHTML = "";
+  TEMPLATES.forEach((tpl, idx)=>{
+    const div = document.createElement("div");
+    div.className="item";
+    div.innerHTML = `
+      <div>
+        <b>${tpl.name}</b>
+        <small>🧬 טוען סט שדות + יכולות</small>
+      </div>
+      <div class="badge">Use</div>
+    `;
+    div.onclick = ()=>{
+      applyTemplate(idx);
+      switchLeftTab("library");
+      toast("🧬 תבנית נטענה");
+    };
+    list.appendChild(div);
+  });
+}
+
+function applyTemplate(i){
+  const tpl = TEMPLATES[i];
+  if(!tpl) return;
+
+  // Reset first
+  newCard(true);
+
+  Object.entries(tpl.data).forEach(([k,v])=>{
+    const map = {
+      card_series:"card_series",
+      card_type:"card_type",
+      card_name:"card_name",
+      card_alias:"card_alias",
+      element:"element",
+      rarity:"rarity",
+      alignment:"alignment",
+      core_energy:"core_energy",
+      lore_description:"lore_description",
+      personality:"personality",
+      role:"role",
+      world_context:"world_context",
+      trigger:"trigger",
+      effect:"effect",
+      first_message:"first_message",
+      dialogue_style:"dialogue_style",
+      dialogue_examples:"dialogue_examples",
+      outfit:"outfit",
+      aura:"aura",
+      pal1:"pal1",
+      pal2:"pal2",
+      pal3:"pal3",
+      tags:"tags",
+      version:"version",
+      changelog:"changelog"
+    };
+    const id = map[k];
+    if(id && $(id)) $(id).value = v;
+  });
+
+  abilities = (tpl.abilities || []).map(x=>({...x}));
+
+  refreshJSONLive();
+  renderLibrary();
+}
+
+/* ---------- Draft Auto-save ---------- */
+let draftTimer = null;
+function startAutoDraft(){
+  stopAutoDraft();
+  const seconds = Number(settings.autoDraftSeconds) || 3;
+  draftTimer = setInterval(()=>{
+    const {card} = refreshJSONLive();
+    localStorage.setItem(K_DRAFT, JSON.stringify({
+      saved_at: nowISO(),
+      abilities,
+      form: grabFormSnapshot(),
+      activeId
+    }));
+    $("draftState").textContent = "Saved";
+  }, Math.max(2, seconds)*1000);
+}
+function stopAutoDraft(){
+  if(draftTimer) clearInterval(draftTimer);
+  draftTimer = null;
+}
+function grabFormSnapshot(){
+  const ids = [
+    "card_id","card_series","card_type","card_name","card_alias","element","rarity","alignment","core_energy",
+    "lore_description","personality","role","world_context","trigger","effect","first_message","dialogue_style","dialogue_examples",
+    "outfit","aura","pal1","pal2","pal3","art_prompt","tags","version","changelog"
+  ];
+  const snap = {};
+  ids.forEach(id=>{
+    const el = $(id);
+    if(el) snap[id] = el.value;
+  });
+  return snap;
+}
+function restoreDraft(){
+  try{
+    const d = JSON.parse(localStorage.getItem(K_DRAFT) || "null");
+    if(!d) return false;
+    if(d.form){
+      Object.entries(d.form).forEach(([k,v])=>{
+        if($(k)) $(k).value = v;
+      });
+    }
+    abilities = Array.isArray(d.abilities) ? d.abilities.map(x=>({...x})) : [];
+    activeId = d.activeId || null;
+    refreshJSONLive();
+    toast("💾 Draft שוחזר");
+    return true;
+  }catch{
+    return false;
+  }
+}
+
+/* ---------- New / Save / Delete / Duplicate ---------- */
+function newCard(silent=false){
+  activeId = null;
+  localStorage.removeItem(K_ACTIVE);
+
+  // Clear fields
+  [
+    "card_id","card_series","card_name","card_alias","element","alignment","core_energy",
+    "lore_description","personality","role","world_context","trigger","effect","first_message","dialogue_style","dialogue_examples",
+    "outfit","aura","pal1","pal2","pal3","art_prompt","tags","version","changelog"
+  ].forEach(id=>{ if($(id)) $(id).value = ""; });
+
+  $("card_type").value = "Character";
+  $("rarity").value = "Legendary";
+  $("version").value = "1.0";
+  abilities = [];
+
+  refreshJSONLive();
+  renderLibrary();
+  if(!silent) toast("🆕 קלף חדש");
+}
+
+function saveCurrent(){
+  const {card, problems} = refreshJSONLive();
+  if(problems.length){
+    toast("❌ חסרים שדות: " + problems.join(" • "));
+    return;
+  }
+  activeId = card.card_id;
+  localStorage.setItem(K_ACTIVE, activeId);
+  upsertCard(card);
+  toast("💾 נשמר לספרייה");
+}
+
+function deleteCurrent(){
+  if(!activeId){
+    toast("⚠️ אין קלף פעיל למחיקה");
+    return;
+  }
+  const idx = library.findIndex(x=>x.card_id===activeId);
+  if(idx<0){
+    toast("⚠️ הקלף לא נמצא בספרייה");
+    return;
+  }
+  library.splice(idx,1);
+  saveLibrary();
+  newCard(true);
+  renderLibrary();
+  toast("🗑️ נמחק");
+}
+
+function duplicateCurrent(){
+  const {card, problems} = refreshJSONLive();
+  if(problems.length){
+    toast("⚠️ קודם תקן שדות חובה ואז שכפל");
+    return;
+  }
+  const copy = JSON.parse(JSON.stringify(card));
+  copy.card_id = genId("HG");
+  copy.card_name = copy.card_name ? (copy.card_name + " (Copy)") : "Copy";
+  copy.meta.updated_at = nowISO();
+  activeId = copy.card_id;
+  upsertCard(copy);
+  loadToForm(copy.card_id);
+  toast("🧿 שוכפל");
+}
+
+/* ---------- Abilities ---------- */
+function addAbility(){
+  const a = {
+    name: safeTrim($("ab_name").value),
+    type: $("ab_type").value,
+    cost: safeTrim($("ab_cost").value),
+    cooldown: safeTrim($("ab_cd").value),
+    target: safeTrim($("ab_target").value),
+    effect: safeTrim($("ab_effect").value)
+  };
+  if(!a.name || !a.effect){
+    toast("⚠️ מלא לפחות Ability Name + Effect");
+    return;
+  }
+  abilities.push(a);
+  // Clear mini inputs
+  ["ab_name","ab_cost","ab_cd","ab_target","ab_effect"].forEach(id=>$(id).value="");
+  $("ab_type").value = "Active";
+  refreshJSONLive();
+  toast("➕ יכולת נוספה");
+}
+function clearAbilities(){
+  abilities = [];
+  refreshJSONLive();
+  toast("🧽 יכולות נוקו");
+}
+
+/* ---------- Export / Import ---------- */
+function exportOne(){
+  const {card, problems} = refreshJSONLive();
+  if(problems.length){
+    toast("⚠️ אי אפשר לייצא: חסרים שדות חובה");
+    return;
+  }
+  downloadText(`${card.card_id}.json`, JSON.stringify(card, null, 2));
+  toast("📤 יצוא קלף בוצע");
+}
+
+function exportAll(){
+  downloadText(`cardgpt_library_${Date.now()}.json`, JSON.stringify(library, null, 2));
+  toast("📦 יצוא ספרייה בוצע");
+}
+
+function refreshLibraryDump(){
+  $("libraryDump").textContent = JSON.stringify(library, null, 2);
+}
+
+function importFromBox(){
+  const raw = safeTrim($("importBox").value);
+  if(!raw){
+    toast("⚠️ אין JSON לייבוא");
+    return;
+  }
+  try{
+    const parsed = JSON.parse(raw);
+    const arr = Array.isArray(parsed) ? parsed : [parsed];
+
+    let imported = 0;
+    arr.forEach(obj=>{
+      // minimal sanity
+      if(obj && obj.card_id && obj.card_name){
+        library = library.filter(x=>x.card_id !== obj.card_id);
+        library.unshift(obj);
+        imported++;
+      }
+    });
+
+    saveLibrary();
+    renderLibrary();
+    toast(`📥 יובאו ${imported} קלפים`);
+    $("importBox").value = "";
+    switchLeftTab("library");
+  }catch{
+    toast("❌ JSON לא תקין");
+  }
+}
+
+/* ---------- Canvas Rendering ---------- */
+function applyCanvasSize(){
+  const c = $("cardCanvas");
+  c.width = Number(settings.canvasW) || 1600;
+  c.height = Number(settings.canvasH) || 900;
+}
+function renderCanvas(){
+  const {card} = refreshJSONLive();
+  const canvas = $("cardCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const W = canvas.width, H = canvas.height;
+
+  // Background gradient
+  const g = ctx.createLinearGradient(0,0,W,H);
+  g.addColorStop(0, "#070a1a");
+  g.addColorStop(0.5, "#0c0f26");
+  g.addColorStop(1, "#040512");
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,W,H);
+
+  // Glow blobs
+  function blob(x,y,r, color){
+    const rg = ctx.createRadialGradient(x,y,0,x,y,r);
+    rg.addColorStop(0, color);
+    rg.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = rg;
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+  }
+  blob(W*0.18, H*0.20, Math.min(W,H)*0.38, "rgba(125,249,255,0.20)");
+  blob(W*0.80, H*0.26, Math.min(W,H)*0.34, "rgba(138,92,255,0.22)");
+  blob(W*0.62, H*0.78, Math.min(W,H)*0.32, "rgba(255,211,110,0.14)");
+
+  // Frame
+  ctx.strokeStyle = "rgba(125,249,255,0.22)";
+  ctx.lineWidth = 3;
+  roundRect(ctx, 28, 28, W-56, H-56, 26);
+  ctx.stroke();
+
+  // Header stripe
+  const hg = ctx.createLinearGradient(0,0,W,0);
+  hg.addColorStop(0, "rgba(0,229,255,0.35)");
+  hg.addColorStop(0.55, "rgba(124,77,255,0.26)");
+  hg.addColorStop(1, "rgba(255,211,110,0.18)");
+  ctx.fillStyle = hg;
+  roundRect(ctx, 44, 44, W-88, 110, 20);
+  ctx.fill();
+
+  // Text styles
+  ctx.fillStyle = "rgba(6,16,42,0.65)";
+  ctx.fillRect(44, 44, W-88, 110);
+
+  // Title
+  ctx.font = "900 44px system-ui, sans-serif";
+  ctx.fillStyle = "rgba(234,242,255,0.96)";
+  ctx.fillText(card.card_name || "Unnamed Card", 70, 108);
+
+  // Subtitle
+  ctx.font = "700 22px system-ui, sans-serif";
+  ctx.fillStyle = "rgba(234,242,255,0.80)";
+  const sub = `${card.card_type || "—"} • ${card.card_series || "—"} • ${card.core_energy || "—"}`;
+  ctx.fillText(sub, 70, 140);
+
+  // Badge box
+  ctx.fillStyle = "rgba(10,12,28,0.62)";
+  roundRect(ctx, W-410, 62, 340, 74, 18); ctx.fill();
+  ctx.strokeStyle = "rgba(125,249,255,0.18)";
+  ctx.lineWidth = 2;
+  roundRect(ctx, W-410, 62, 340, 74, 18); ctx.stroke();
+
+  ctx.font = "900 22px system-ui, sans-serif";
+  ctx.fillStyle = "rgba(125,249,255,0.92)";
+  ctx.fillText(`${card.rarity || "—"} • ${card.alignment || "—"}`, W-390, 108);
+
+  // Lore box
+  ctx.fillStyle = "rgba(10,12,28,0.56)";
+  roundRect(ctx, 44, 180, W-88, 240, 22); ctx.fill();
+  ctx.strokeStyle = "rgba(125,249,255,0.14)";
+  ctx.lineWidth = 2;
+  roundRect(ctx, 44, 180, W-88, 240, 22); ctx.stroke();
+
+  ctx.font = "900 22px system-ui, sans-serif";
+  ctx.fillStyle = "rgba(125,249,255,0.90)";
+  ctx.fillText("📜 Lore", 70, 218);
+
+  ctx.font = "500 18px system-ui, sans-serif";
+  ctx.fillStyle = "rgba(234,242,255,0.86)";
+  wrapText(ctx, card.lore.description || card.lore.world_context || "—", 70, 252, W-140, 26, 7);
+
+  // Abilities
+  const ab = card.abilities || [];
+  const boxY = 448;
+  ctx.fillStyle = "rgba(10,12,28,0.48)";
+  roundRect(ctx, 44, boxY, W-88, H-boxY-110, 22); ctx.fill();
+  ctx.strokeStyle = "rgba(125,249,255,0.14)";
+  ctx.lineWidth = 2;
+  roundRect(ctx, 44, boxY, W-88, H-boxY-110, 22); ctx.stroke();
+
+  ctx.font = "900 22px system-ui, sans-serif";
+  ctx.fillStyle = "rgba(125,249,255,0.90)";
+  ctx.fillText("⚔️ Abilities", 70, boxY+40);
+
+  const cols = 2;
+  const pad = 26;
+  const boxW = (W-88 - pad*(cols+1)) / cols;
+  const startY = boxY + 60;
+  let x0 = 44 + pad, y0 = startY;
+  const maxShow = 6;
+
+  for(let i=0;i<Math.min(ab.length, maxShow);i++){
+    const col = i % cols;
+    const row = Math.floor(i/cols);
+    const x = 44 + pad + col*(boxW + pad);
+    const y = startY + row*120;
+
+    ctx.fillStyle = "rgba(7,10,24,0.62)";
+    roundRect(ctx, x, y, boxW, 96, 18); ctx.fill();
+    ctx.strokeStyle = "rgba(125,249,255,0.12)";
+    ctx.lineWidth = 2;
+    roundRect(ctx, x, y, boxW, 96, 18); ctx.stroke();
+
+    ctx.font = "900 18px system-ui, sans-serif";
+    ctx.fillStyle = "rgba(125,249,255,0.92)";
+    ctx.fillText("⚡ " + (ab[i].name || "Ability"), x+16, y+28);
+
+    ctx.font = "600 14px system-ui, sans-serif";
+    ctx.fillStyle = "rgba(234,242,255,0.72)";
+    const info = [ab[i].type, ab[i].cost ? "Cost: "+ab[i].cost : "", ab[i].cooldown ? "CD: "+ab[i].cooldown : ""].filter(Boolean).join(" • ");
+    ctx.fillText(info, x+16, y+48);
+
+    ctx.font = "500 15px system-ui, sans-serif";
+    ctx.fillStyle = "rgba(234,242,255,0.86)";
+    wrapText(ctx, ab[i].effect || "—", x+16, y+70, boxW-32, 20, 2);
+  }
+
+  // Footer
+  ctx.fillStyle = "rgba(10,12,28,0.70)";
+  roundRect(ctx, 44, H-88, W-88, 44, 16); ctx.fill();
+  ctx.strokeStyle = "rgba(125,249,255,0.14)";
+  ctx.lineWidth = 2;
+  roundRect(ctx, 44, H-88, W-88, 44, 16); ctx.stroke();
+
+  ctx.font = "700 16px system-ui, sans-serif";
+  ctx.fillStyle = "rgba(234,242,255,0.82)";
+  ctx.fillText(`🆔 ${card.card_id} • v${card.meta.version} • ⚙️ CardGPT`, 70, H-58);
+
+  ctx.textAlign = "right";
+  ctx.fillText(new Date().toLocaleString("he-IL", {dateStyle:"medium", timeStyle:"short"}), W-70, H-58);
+  ctx.textAlign = "left";
+
+  toast("🎨 Canvas רונדר");
+}
+
+function downloadCanvasPNG(){
+  const canvas = $("cardCanvas");
+  const a = document.createElement("a");
+  const id = safeTrim($("card_id").value) || "card";
+  a.download = `${id}.png`;
+  a.href = canvas.toDataURL("image/png");
+  a.click();
+  toast("🖼️ PNG נשמר");
+}
+
+function roundRect(ctx, x, y, w, h, r){
+  const rr = Math.min(r, w/2, h/2);
+  ctx.beginPath();
+  ctx.moveTo(x+rr, y);
+  ctx.arcTo(x+w, y, x+w, y+h, rr);
+  ctx.arcTo(x+w, y+h, x, y+h, rr);
+  ctx.arcTo(x, y+h, x, y, rr);
+  ctx.arcTo(x, y, x+w, y, rr);
+  ctx.closePath();
+}
+function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines=999){
+  const words = safeTrim(text).split(" ");
+  let line = "";
+  let lines = 0;
+
+  for(let n=0;n<words.length;n++){
+    const testLine = line + words[n] + " ";
+    const metrics = ctx.measureText(testLine);
+    if(metrics.width > maxWidth && n > 0){
+      ctx.fillText(line, x, y);
+      line = words[n] + " ";
+      y += lineHeight;
+      lines++;
+      if(lines >= maxLines) { ctx.fillText("…", x, y); return; }
+    } else {
+      line = testLine;
+    }
+  }
+  ctx.fillText(line, x, y);
+}
+
+/* ---------- Version bump ---------- */
+function incVersion(){
+  const v = safeTrim($("version").value) || "1.0";
+  const parts = v.split(".").map(x=>parseInt(x,10));
+  const maj = isNaN(parts[0])?1:parts[0];
+  const min = isNaN(parts[1])?0:parts[1];
+  $("version").value = `${maj}.${min+1}`;
+  toast("🔼 גרסה עודכנה");
+  refreshJSONLive();
+}
+
+/* ---------- Settings ---------- */
+function loadSettings(){
+  try{
+    const s = JSON.parse(localStorage.getItem(K_SETTINGS) || "null");
+    if(s){
+      settings = {...settings, ...s};
+    }
+  }catch{}
+  $("set_cw").value = settings.canvasW;
+  $("set_ch").value = settings.canvasH;
+  $("set_autodraft").value = settings.autoDraftSeconds;
+  applyCanvasSize();
+}
+function saveSettings(){
+  localStorage.setItem(K_SETTINGS, JSON.stringify(settings));
+}
+function applySettings(){
+  settings.canvasW = Number($("set_cw").value) || 1600;
+  settings.canvasH = Number($("set_ch").value) || 900;
+  settings.autoDraftSeconds = Number($("set_autodraft").value) || 3;
+  saveSettings();
+  applyCanvasSize();
+  startAutoDraft();
+  toast("✅ הגדרות הוחלו");
+}
+
+/* ---------- Keyboard shortcuts ---------- */
+document.addEventListener("keydown", (e)=>{
+  const isMac = navigator.platform.toLowerCase().includes("mac");
+  const ctrl = isMac ? e.metaKey : e.ctrlKey;
+
+  if(ctrl && e.key.toLowerCase()==="s"){
+    e.preventDefault();
+    saveCurrent();
+  }
+  if(ctrl && e.key.toLowerCase()==="n"){
+    e.preventDefault();
+    newCard();
+  }
+  if(ctrl && e.key.toLowerCase()==="e"){
+    e.preventDefault();
+    exportOne();
+  }
+});
+
+/* ---------- Wire events ---------- */
+function wire(){
+  // Tabs
+  document.querySelectorAll("[data-lefttab]").forEach(el=>{
+    el.addEventListener("click", ()=>switchLeftTab(el.dataset.lefttab));
+  });
+  document.querySelectorAll("[data-righttab]").forEach(el=>{
+    el.addEventListener("click", ()=>switchRightTab(el.dataset.righttab));
+  });
+
+  // Top actions
+  $("btnNew").onclick = ()=>newCard();
+  $("btnSave").onclick = ()=>saveCurrent();
+  $("btnCopy").onclick = ()=>copyToClipboard($("jsonOut").textContent);
+  $("btnPNG").onclick = ()=>{ switchRightTab("preview"); renderCanvas(); downloadCanvasPNG(); };
+  $("btnExportAll").onclick = ()=>exportAll();
+
+  // Mini actions
+  $("btnGenerate").onclick = ()=>{ refreshJSONLive(); toast("⚡ JSON נבנה"); };
+  $("btnValidate").onclick = ()=>{
+    const {card, problems} = refreshJSONLive();
+    if(problems.length) toast("❌ " + problems.join(" • "));
+    else toast("✅ הכל תקין");
+  };
+  $("btnIncVer").onclick = ()=>incVersion();
+
+  $("btnAddAbility").onclick = ()=>addAbility();
+  $("btnClearAbilities").onclick = ()=>clearAbilities();
+
+  $("btnDuplicate").onclick = ()=>duplicateCurrent();
+  $("btnDelete").onclick = ()=>deleteCurrent();
+  $("btnExportOne").onclick = ()=>exportOne();
+
+  $("btnMinCopy").onclick = ()=>copyToClipboard($("jsonOut").textContent);
+  $("btnMinDownload").onclick = ()=>exportOne();
+
+  // Export tab
+  $("btnDownloadOne").onclick = ()=>exportOne();
+  $("btnDownloadAll").onclick = ()=>exportAll();
+  $("btnCopyAll").onclick = ()=>copyToClipboard(JSON.stringify(library, null, 2));
+
+  // Search filter
+  $("q").addEventListener("input", renderLibrary);
+  $("filterType").addEventListener("change", renderLibrary);
+
+  // Import
+  $("btnImport").onclick = ()=>importFromBox();
+  $("btnClearImport").onclick = ()=>$("importBox").value="";
+  $("fileInput").addEventListener("change", async (e)=>{
+    const f = e.target.files?.[0];
+    if(!f) return;
+    const txt = await f.text();
+    $("importBox").value = txt;
+    toast("📎 קובץ נטען לתיבת ייבוא");
+  });
+
+  // Preview / Canvas
+  $("btnRenderCanvas").onclick = ()=>renderCanvas();
+  $("btnDownloadCanvas").onclick = ()=>downloadCanvasPNG();
+
+  // Settings
+  $("btnApplySettings").onclick = ()=>applySettings();
+  $("btnClearDraft").onclick = ()=>{
+    localStorage.removeItem(K_DRAFT);
+    $("draftState").textContent = "Idle";
+    toast("🧽 Draft נמחק");
+  };
+  $("btnClearLibrary").onclick = ()=>{
+    localStorage.removeItem(K_LIBRARY);
+    library = [];
+    saveLibrary();
+    renderLibrary();
+    toast("🧨 ספרייה נוקתה");
+  };
+
+  // Auto refresh on input changes (live)
+  const liveIds = [
+    "card_id","card_series","card_type","card_name","card_alias","element","rarity","alignment","core_energy",
+    "lore_description","personality","role","world_context","trigger","effect","first_message","dialogue_style","dialogue_examples",
+    "outfit","aura","pal1","pal2","pal3","art_prompt","tags","version","changelog"
+  ];
+  liveIds.forEach(id=>{
+    const el = $(id);
+    if(el) el.addEventListener("input", ()=>refreshJSONLive());
+    if(el && el.tagName==="SELECT") el.addEventListener("change", ()=>refreshJSONLive());
+  });
+}
+
+/* ---------- Init ---------- */
+function init(){
+  // Time
+  function tick(){
+    $("nowTime").textContent = new Date().toLocaleString("he-IL",{dateStyle:"full", timeStyle:"medium"});
+  }
+  tick(); setInterval(tick, 1000);
+
+  loadSettings();
+  loadLibrary();
+
+  // Active card restore
+  activeId = localStorage.getItem(K_ACTIVE) || null;
+
+  renderTemplates();
+  renderLibrary();
+
+  // Try restore draft first
+  const restored = restoreDraft();
+
+  // If active exists in library and draft not restored strongly, load it
+  if(!restored && activeId){
+    const c = library.find(x=>x.card_id===activeId);
+    if(c) loadToForm(activeId);
+  } else {
+    refreshJSONLive();
+  }
+
+  wire();
+  startAutoDraft();
+  applyCanvasSize();
+  renderCanvas();
+  toast("⚡ CardGPT Studio PRO מוכן");
+}
+
+init();
+</script>
+
+</body>
+</html>
