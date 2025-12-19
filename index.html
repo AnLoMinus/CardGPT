@@ -260,6 +260,36 @@
       white-space: pre;
     }
 
+    .ai-grid{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 12px;
+      align-items:start;
+    }
+    .ai-card{
+      border: 1px solid rgba(125,249,255,.16);
+      border-radius: 14px;
+      padding: 12px;
+      background: rgba(10,12,28,.45);
+      box-shadow: inset 0 0 0 1px rgba(0,229,255,.06);
+    }
+    .ai-status{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      color: rgba(234,242,255,.86);
+      font-weight: 800;
+      font-size: 12.5px;
+    }
+    .ai-status .dot{ width:8px; height:8px; border-radius:50%; background: var(--ok); box-shadow: 0 0 12px rgba(66,255,176,.35); }
+    .ai-image{
+      width:100%;
+      border-radius: 14px;
+      border: 1px solid rgba(125,249,255,.18);
+      box-shadow: 0 16px 36px rgba(0,0,0,.45);
+      display:none;
+    }
+
     .status{
       display:flex; gap:10px; flex-wrap:wrap; align-items:center;
       font-size: 12.5px;
@@ -867,6 +897,45 @@ The Light Gates have chosen you."></textarea>
 
           <div class="hr"></div>
 
+          <div class="ai-card">
+            <h4 style="margin:0 0 8px; color: var(--cyan);">🤖 יצירת תמונת קלף (ChatGPT API)</h4>
+            <div class="hint">⚡ משתמש בפרומפט אוטומטי מהשדות שמילאת. הזן מפתח OpenAI ולחץ שלח כדי לקבל דימוי מוכן.</div>
+
+            <div class="ai-grid">
+              <div>
+                <label>🔑 API Key</label>
+                <input id="ai_api_key" type="password" placeholder="sk-..." autocomplete="off"/>
+                <div class="hint small">
+                  <input id="aiRemember" type="checkbox" style="width:auto;"> זכור מפתח בדפדפן (LocalStorage בלבד, לא נשלח לשרת).
+                </div>
+
+                <label>🧠 מודל</label>
+                <select id="ai_model">
+                  <option value="gpt-image-1">gpt-image-1 (מומלץ)</option>
+                  <option value="dall-e-3">dall-e-3</option>
+                </select>
+
+                <label>🧾 פרומפט אוטומטי</label>
+                <textarea id="aiPrompt" rows="8" readonly></textarea>
+
+                <div class="mini-actions">
+                  <button class="mini" id="btnSendAI">⚡ שלח ובקש תמונה</button>
+                  <div class="ai-status" id="aiStatus">
+                    <span class="dot"></span>
+                    <span class="msg">מוכן לשליחה</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="ai-card" style="background: rgba(12,14,30,.55);">
+                <img id="aiImage" class="ai-image" alt="Card image preview" />
+                <div class="hint small">📌 התמונה נשלפת ישירות מ-OpenAI ומוצגת מקומית. מומלץ לשמור לפני רענון.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
           <label>🧾 Library JSON (קריאה בלבד)</label>
           <div class="jsonbox" id="libraryDump">[]</div>
         </div>
@@ -940,6 +1009,7 @@ const K_LIBRARY = "cardgpt_library_v1";
 const K_DRAFT   = "cardgpt_draft_v1";
 const K_ACTIVE  = "cardgpt_active_id_v1";
 const K_SETTINGS= "cardgpt_settings_v1";
+const K_APIKEY  = "cardgpt_api_key_v1";
 
 /* ---------- In-memory state ---------- */
 let library = [];
@@ -950,7 +1020,8 @@ let abilities = [];
 let settings = {
   canvasW: 1600,
   canvasH: 900,
-  autoDraftSeconds: 3
+  autoDraftSeconds: 3,
+  aiModel: "gpt-image-1"
 };
 
 /* ---------- Helpers ---------- */
@@ -1013,6 +1084,7 @@ function switchRightTab(name){
 
   if(name==="export"){
     refreshLibraryDump();
+    updateAIPrompt();
   }
   if(name==="preview"){
     renderPreview2();
@@ -1128,6 +1200,8 @@ function refreshJSONLive(){
   chips.forEach(c=>{
     // no-op (styling reserved)
   });
+
+  updateAIPrompt(card);
 
   return {card, problems};
 }
@@ -1374,6 +1448,531 @@ const TEMPLATES = [
       {name:"Signal Lock", type:"Active", cost:"5 Voltage", cooldown:"8s", target:"Self", effect:"Boosts accuracy and decision speed while reducing distraction."},
       {name:"Noise Cancel", type:"Passive", cost:"0", cooldown:"—", target:"Self", effect:"Filters distractions and keeps the core path stable."}
     ]
+  },
+  {
+    name:"🔥 Power • Solar Flare Battery",
+    data:{
+      card_series:"Holly Trap Flow",
+      card_type:"Power",
+      card_name:"Solar Flare Battery",
+      card_alias:"Pocket Star Core",
+      element:"Solar Plasma",
+      rarity:"Epic",
+      alignment:"Light-Tech",
+      core_energy:"Condensed Sunlight",
+      lore_description:"A handheld star-core that stores violent sunlight and releases it in precise arcs.",
+      personality:"Impatient, radiant, loyal to its bearer",
+      role:"Energy amplifier",
+      world_context:"Built from remnants of pre-collapse satellites; worshipped by light-clans as a relic.",
+      trigger:"Direct exposure to sunlight / holy chants",
+      effect:"Releases concentrated sun beams or recharges allies",
+      first_message:"Charge accepted. Solar veins glowing.",
+      dialogue_style:"Short, hot, pulsing",
+      dialogue_examples:"Heat rising.\nReady to vent flares.\nAim me at the darkness.",
+      outfit:"—",
+      aura:"Radiant corona rings around the wielder",
+      pal1:"Solar Gold",
+      pal2:"Flare Orange",
+      pal3:"Void Indigo",
+      tags:"Power, Solar, Tech, SFW",
+      art_prompt:"Glowing sci-fi battery holding a small sun, floating runes, space backdrop",
+      version:"1.0",
+      changelog:"Added solar power template"
+    },
+    abilities:[
+      {name:"Sunburst Pulse", type:"Active", cost:"3 Charges", cooldown:"10s", target:"Line", effect:"Fires a blinding solar beam that cauterizes corruption."},
+      {name:"Radiant Recharge", type:"Support", cost:"1 Charge", cooldown:"5s", target:"Ally", effect:"Instantly restores core_energy to allies and ignites their weapons."}
+    ]
+  },
+  {
+    name:"🛡️ Artifact • Prism Aegis",
+    data:{
+      card_series:"Holly Trap Flow",
+      card_type:"Artifact",
+      card_name:"Prism Aegis",
+      card_alias:"Mirror Shield of Resonance",
+      element:"Light / Crystal",
+      rarity:"Legendary",
+      alignment:"Order",
+      core_energy:"Resonant Refraction",
+      lore_description:"A shield forged from dimensional crystal, splitting attacks into harmless light.",
+      personality:"Stoic guardian, analytical",
+      role:"Defense & reflection",
+      world_context:"Carried by gatekeepers who stand at the borders between timelines.",
+      trigger:"Incoming projectile or curse",
+      effect:"Splits, reflects, or stores energy",
+      first_message:"Angle locked. Refracting threat.",
+      dialogue_style:"Calm, calculated, geometric metaphors",
+      dialogue_examples:"Trajectory mapped.\nReflection ready.\nHold position.",
+      outfit:"—",
+      aura:"Prismatic shards swirling",
+      pal1:"Crystal Cyan",
+      pal2:"Holo Pink",
+      pal3:"Deep Navy",
+      tags:"Artifact, Shield, Light",
+      art_prompt:"Prismatic energy shield with floating shards, defensive stance, cosmic background",
+      version:"1.0",
+      changelog:"New artifact template"
+    },
+    abilities:[
+      {name:"Refraction Wall", type:"Active", cost:"2 Charges", cooldown:"12s", target:"Self", effect:"Creates a barrier that splits incoming damage into harmless light particles."},
+      {name:"Mirror Return", type:"Reactive", cost:"1 Charge", cooldown:"—", target:"Attacker", effect:"Reflects a portion of the attack back with amplified purity damage."}
+    ]
+  },
+  {
+    name:"🌙 Character • Luna Runeweaver",
+    data:{
+      card_series:"Moonlit Protocol",
+      card_type:"Character",
+      card_name:"Luna Runeweaver",
+      card_alias:"Architect of Night Glyphs",
+      element:"Moonlight / Ink",
+      rarity:"Mythic",
+      alignment:"Neutral Mystic",
+      core_energy:"Lunar Scripts",
+      lore_description:"She writes glowing runes in midair that bend emotions and gravity.",
+      personality:"Quiet, poetic, cunning",
+      role:"Control mage",
+      world_context:"In nocturnal cities she tags runes on rooftops that decide which dreams manifest.",
+      trigger:"Nightfall or eclipse",
+      effect:"Summons protective glyphs and dream portals",
+      first_message:"The ink listens to the moon.",
+      dialogue_style:"Soft, metaphorical, short verses",
+      dialogue_examples:"One stroke to silence.\nTwo strokes to open.\nStay still, the rune is breathing.",
+      outfit:"Dark streetwear with glowing ink veins",
+      aura:"Silver particles orbiting like moons",
+      pal1:"Moon Silver",
+      pal2:"Ink Black",
+      pal3:"Lavender Mist",
+      tags:"Character, Mystic, Urban",
+      art_prompt:"Cyberpunk sorceress painting runes with moonlit ink, rooftops, night sky",
+      version:"1.0",
+      changelog:"Moon mage template"
+    },
+    abilities:[
+      {name:"Ink Gravity", type:"Active", cost:"8 Focus", cooldown:"10s", target:"Zone", effect:"Creates a heavy moon rune that slows and grounds enemies."},
+      {name:"Dream Sigil", type:"Support", cost:"5 Focus", cooldown:"15s", target:"Ally", effect:"Places a rune that absorbs fear and converts it into shield points."}
+    ]
+  },
+  {
+    name:"🌊 State • Tidal Trance",
+    data:{
+      card_series:"Aqua Flux",
+      card_type:"State",
+      card_name:"Tidal Trance",
+      card_alias:"Mind Like Water",
+      element:"Water / Mind",
+      rarity:"Rare",
+      alignment:"Flow",
+      core_energy:"Liquid Focus",
+      lore_description:"Meditative state where thoughts move like waves and enemies drown in silence.",
+      personality:"Calm, reflective, relentless",
+      role:"Crowd control field",
+      world_context:"Used by river monks who defend data-stream temples.",
+      trigger:"Deep breath + mantra",
+      effect:"Floods the area with hypnotic ripples",
+      first_message:"Inhale tide. Exhale storm.",
+      dialogue_style:"Minimal, flowing, patient",
+      dialogue_examples:"Let it flow.\nSink into stillness.\nWaves remember.",
+      outfit:"—",
+      aura:"Liquid halo and water droplets suspended",
+      pal1:"Azure",
+      pal2:"Seafoam",
+      pal3:"Midnight Blue",
+      tags:"State, Water, Calm",
+      art_prompt:"Meditative silhouette under crashing waves, glowing ripples, tranquil yet powerful",
+      version:"1.0",
+      changelog:"Water state template"
+    },
+    abilities:[
+      {name:"Undertow", type:"Active", cost:"6 Flow", cooldown:"9s", target:"Enemies", effect:"Pulls foes toward the center of the ripple and dampens their abilities."},
+      {name:"Calming Current", type:"Support", cost:"4 Flow", cooldown:"6s", target:"Allies", effect:"Removes fear effects and increases clarity."}
+    ]
+  },
+  {
+    name:"🌪️ Power • Tempest Surge",
+    data:{
+      card_series:"Storm Thread",
+      card_type:"Power",
+      card_name:"Tempest Surge",
+      card_alias:"Storm Thread Conduit",
+      element:"Wind / Thunder",
+      rarity:"Epic",
+      alignment:"Chaos-Tech",
+      core_energy:"Cyclone Current",
+      lore_description:"A coil that summons micro-storms and threads lightning into the battlefield.",
+      personality:"Loud, daring, impulsive",
+      role:"Area disruption",
+      world_context:"Used by sky pirates who ride jet kites over ruined cities.",
+      trigger:"Rapid spin or shouted command",
+      effect:"Unleashes tornado darts and chained lightning",
+      first_message:"Whip the sky with me!",
+      dialogue_style:"Brash, energetic, musical",
+      dialogue_examples:"Spin faster!\nHear the drum of thunder!\nWe break the air open.",
+      outfit:"—",
+      aura:"Spiraling wind glyphs",
+      pal1:"Storm Teal",
+      pal2:"Neon Yellow",
+      pal3:"Charcoal",
+      tags:"Power, Storm, Punk",
+      art_prompt:"Tech coil emitting tornado and lightning, punk aesthetic, sky backdrop",
+      version:"1.0",
+      changelog:"Storm power template"
+    },
+    abilities:[
+      {name:"Chain Cyclone", type:"Active", cost:"7 Charge", cooldown:"10s", target:"Area", effect:"Launches a twisting storm that lifts targets and shocks them."},
+      {name:"Static Rhythm", type:"Passive", cost:"0", cooldown:"—", target:"Self", effect:"Generates charge each time wind speed changes around the wielder."}
+    ]
+  },
+  {
+    name:"🎭 Character • Masked Oracle",
+    data:{
+      card_series:"Veil Market",
+      card_type:"Character",
+      card_name:"Masked Oracle",
+      card_alias:"Dealer of Futures",
+      element:"Smoke / Fate",
+      rarity:"Legendary",
+      alignment:"Neutral",
+      core_energy:"Fortune Threads",
+      lore_description:"A fortune teller who trades secrets for destinies, wearing shifting masks.",
+      personality:"Playful, unsettling, omniscient",
+      role:"Support / debuff",
+      world_context:"Appears in bazaars at dusk offering glimpses of possible endings.",
+      trigger:"A deal is struck",
+      effect:"Reveals outcomes, twists luck",
+      first_message:"What ending do you buy?",
+      dialogue_style:"Riddles, playful threats",
+      dialogue_examples:"Luck is a coin.\nHeads? Or heads?\nMasks hear more than mouths.",
+      outfit:"Layered robes with multiple theatrical masks",
+      aura:"Smoke ribbons forming symbols",
+      pal1:"Ash Grey",
+      pal2:"Gilded Bronze",
+      pal3:"Wine Red",
+      tags:"Character, Support, Fate",
+      art_prompt:"Fortune teller with floating masks and smoke, neon bazaar lights, mysterious",
+      version:"1.0",
+      changelog:"Oracle template"
+    },
+    abilities:[
+      {name:"Twist Fate", type:"Active", cost:"5 Secrets", cooldown:"12s", target:"Enemy", effect:"Flips the target's next success into failure."},
+      {name:"Contract Smoke", type:"Support", cost:"3 Secrets", cooldown:"8s", target:"Ally", effect:"Shrouds an ally, making them untargetable for a brief time."}
+    ]
+  },
+  {
+    name:"🧪 Artifact • Quantum Vial",
+    data:{
+      card_series:"Labyrinth Labs",
+      card_type:"Artifact",
+      card_name:"Quantum Vial",
+      card_alias:"Bottled Possibility",
+      element:"Quantum",
+      rarity:"Epic",
+      alignment:"Sci-Mystic",
+      core_energy:"Collapsed Probabilities",
+      lore_description:"A vial containing liquid probability that can rewrite a moment.",
+      personality:"Curious, volatile",
+      role:"Utility item",
+      world_context:"Created by rogue physicists who stole moments from parallel labs.",
+      trigger:"Glass is tapped three times",
+      effect:"Chooses the best possible outcome within a small window",
+      first_message:"Options recalculated.",
+      dialogue_style:"Scientific, quick whispers",
+      dialogue_examples:"Collapse here.\nSwap outcomes.\nTry again, but better.",
+      outfit:"—",
+      aura:"Glowing formula symbols around the vial",
+      pal1:"Iridescent Blue",
+      pal2:"Magenta",
+      pal3:"Slate",
+      tags:"Artifact, Science, Luck",
+      art_prompt:"Glass vial with swirling multiverse liquid, lab background, sci-fantasy",
+      version:"1.0",
+      changelog:"Quantum artifact template"
+    },
+    abilities:[
+      {name:"Probability Swap", type:"Active", cost:"1 Drop", cooldown:"10s", target:"Event", effect:"Rerolls a recent event with a favorable bias."},
+      {name:"Backup Moment", type:"Passive", cost:"0", cooldown:"—", target:"Self", effect:"Stores a single moment to revert minor damage or status."}
+    ]
+  },
+  {
+    name:"🌿 Gate • Verdant Spiral",
+    data:{
+      card_series:"Green Pulse",
+      card_type:"Gate",
+      card_name:"Verdant Spiral",
+      card_alias:"Garden Between Worlds",
+      element:"Nature",
+      rarity:"Rare",
+      alignment:"Growth",
+      core_energy:"Photosynth Wave",
+      lore_description:"A living gate made of braided roots and bio-luminescent leaves.",
+      personality:"Gentle, ancient, curious",
+      role:"Portal and healing node",
+      world_context:"Sprouts wherever ecosystems cry out; links forests across timelines.",
+      trigger:"Chant of growth or blood offering",
+      effect:"Opens pathways and heals soil",
+      first_message:"Roots remember your steps.",
+      dialogue_style:"Whispering forest voice",
+      dialogue_examples:"Breathe green.\nCome through softly.\nDo not break the moss.",
+      outfit:"—",
+      aura:"Glowing pollen spiral",
+      pal1:"Emerald",
+      pal2:"Lime",
+      pal3:"Amber",
+      tags:"Gate, Nature, Healing",
+      art_prompt:"Spiral wooden portal covered in moss and glowing flowers, dreamy forest",
+      version:"1.0",
+      changelog:"Nature gate template"
+    },
+    abilities:[
+      {name:"Bloom Passage", type:"Active", cost:"2 Sap", cooldown:"1 turn", target:"Ally", effect:"Opens a verdant doorway that restores health as allies cross."},
+      {name:"Root Snare", type:"Reactive", cost:"1 Sap", cooldown:"8s", target:"Enemy", effect:"Roots erupt to immobilize those who would harm the gate."}
+    ]
+  },
+  {
+    name:"🛰️ Character • Orbital Ranger",
+    data:{
+      card_series:"Sky Relay",
+      card_type:"Character",
+      card_name:"Orbital Ranger",
+      card_alias:"Telemetric Hunter",
+      element:"Vacuum / Steel",
+      rarity:"Epic",
+      alignment:"Tech",
+      core_energy:"Satellite Lock",
+      lore_description:"A scout linked to a web of micro-satellites, shooting rail-light spears.",
+      personality:"Disciplined, data-driven",
+      role:"Sniper / tracker",
+      world_context:"Guards the orbital debris belts and keeps pirate skiffs away from the old stations.",
+      trigger:"Target pinged by satellite",
+      effect:"Fires orbital strikes and tags positions",
+      first_message:"Telemetry received. Lining up shot.",
+      dialogue_style:"Precise, military, clipped",
+      dialogue_examples:"Target locked.\nWind: none. Vacuum: perfect.\nRelease in 3...", 
+      outfit:"Exo-suit with antenna fins and visor",
+      aura:"Orbiting micro-drones",
+      pal1:"Steel Grey",
+      pal2:"Neon Cyan",
+      pal3:"Signal Green",
+      tags:"Character, Tech, Sniper",
+      art_prompt:"Space ranger with visor aiming railgun, satellites visible, sleek exo-suit",
+      version:"1.0",
+      changelog:"Tech ranger template"
+    },
+    abilities:[
+      {name:"Orbital Spear", type:"Active", cost:"1 Lock", cooldown:"6s", target:"Single", effect:"Calls a light-speed spear from orbit to pierce armor."},
+      {name:"Tracker Net", type:"Utility", cost:"2 Locks", cooldown:"12s", target:"Area", effect:"Deploys drones that reveal and mark enemies."}
+    ]
+  },
+  {
+    name:"🧊 State • Crystal Stillness",
+    data:{
+      card_series:"Frost Signal",
+      card_type:"State",
+      card_name:"Crystal Stillness",
+      card_alias:"Frozen Decision",
+      element:"Ice",
+      rarity:"Uncommon",
+      alignment:"Order",
+      core_energy:"Absolute Zero",
+      lore_description:"Mind slows time internally, letting the user act with impossible precision.",
+      personality:"Detached, focused",
+      role:"Control / precision",
+      world_context:"Taught by glacier monks who hear the heartbeat of icebergs.",
+      trigger:"Breath held until pulse is heard",
+      effect:"Slows perception of battle to a crawl",
+      first_message:"Silence the heat. Sculpt the moment.",
+      dialogue_style:"Sparse, cold, exact",
+      dialogue_examples:"One move only.\nFreeze the noise.\nCut along the crack.",
+      outfit:"—",
+      aura:"Floating ice shards and mist",
+      pal1:"Frost Blue",
+      pal2:"White",
+      pal3:"Steel",
+      tags:"State, Ice, Focus",
+      art_prompt:"Person meditating with floating ice shards, time-slow effect, cold light",
+      version:"1.0",
+      changelog:"Ice focus template"
+    },
+    abilities:[
+      {name:"Shatter Point", type:"Active", cost:"4 Chill", cooldown:"8s", target:"Single", effect:"Identifies and strikes the exact weak spot causing heavy true damage."},
+      {name:"Glass Calm", type:"Passive", cost:"0", cooldown:"—", target:"Self", effect:"Immune to panic and haste effects while state is active."}
+    ]
+  },
+  {
+    name:"🧲 Power • Gravity Anchor",
+    data:{
+      card_series:"Deep Core",
+      card_type:"Power",
+      card_name:"Gravity Anchor",
+      card_alias:"Singularity Nail",
+      element:"Gravity",
+      rarity:"Rare",
+      alignment:"Earth-Tech",
+      core_energy:"Mini Black Hole",
+      lore_description:"A spike that pins reality, preventing movement or teleportation in its field.",
+      personality:"Heavy, serious",
+      role:"Area denial",
+      world_context:"Used to stabilize collapsing tunnels and trap phasing beasts.",
+      trigger:"Driven into ground",
+      effect:"Generates gravity well",
+      first_message:"Space locked. Run if you can.",
+      dialogue_style:"Deadpan, laconic",
+      dialogue_examples:"Hold still.\nWeight is truth.\nJump? I think not.",
+      outfit:"—",
+      aura:"Rings of compressed space",
+      pal1:"Obsidian",
+      pal2:"Iron",
+      pal3:"Amber Sparks",
+      tags:"Power, Gravity, Control",
+      art_prompt:"Heavy spike with swirling gravity rings pinning the ground, sci-fi canyon",
+      version:"1.0",
+      changelog:"Gravity power template"
+    },
+    abilities:[
+      {name:"Event Lock", type:"Active", cost:"2 Core", cooldown:"14s", target:"Area", effect:"Prevents teleportation and flight while slowing movement."},
+      {name:"Weight Transfer", type:"Support", cost:"1 Core", cooldown:"7s", target:"Ally", effect:"Lends mass to an ally's attack causing it to crush defenses."}
+    ]
+  },
+  {
+    name:"🕯️ Artifact • Ember Lantern",
+    data:{
+      card_series:"Ashen Roads",
+      card_type:"Artifact",
+      card_name:"Ember Lantern",
+      card_alias:"Warden of Lost Paths",
+      element:"Fire / Spirit",
+      rarity:"Uncommon",
+      alignment:"Guide",
+      core_energy:"Soul Flame",
+      lore_description:"A lantern carried by wanderers; its flame reveals hidden memories.",
+      personality:"Warm, protective",
+      role:"Detection / healing",
+      world_context:"Legends say its light keeps ghosts polite on the Ashen Roads.",
+      trigger:"Lantern is swung in circle",
+      effect:"Reveals invisible threats and calms spirits",
+      first_message:"Stay close. The flame knows the way.",
+      dialogue_style:"Comforting, storytelling",
+      dialogue_examples:"Light for the lost.\nNo shade can trick us.\nHold the handle, feel the song.",
+      outfit:"—",
+      aura:"Soft ember sparks trailing",
+      pal1:"Amber",
+      pal2:"Coal Black",
+      pal3:"Warm White",
+      tags:"Artifact, Support, Fire",
+      art_prompt:"Old lantern with ember flame emitting spirit wisps, dark road background",
+      version:"1.0",
+      changelog:"Lantern template"
+    },
+    abilities:[
+      {name:"Reveal Shade", type:"Active", cost:"2 Ember", cooldown:"9s", target:"Area", effect:"Exposes invisible or phased entities and weakens them."},
+      {name:"Story Heat", type:"Support", cost:"1 Ember", cooldown:"—", target:"Allies", effect:"Slowly heals allies standing near the lantern's glow."}
+    ]
+  },
+  {
+    name:"🎨 Character • Neon Graffiti Spirit",
+    data:{
+      card_series:"Street Myth",
+      card_type:"Character",
+      card_name:"Neon Graffiti Spirit",
+      card_alias:"Wall Whisper",
+      element:"Color / Sound",
+      rarity:"Epic",
+      alignment:"Rebel",
+      core_energy:"Spray Pulse",
+      lore_description:"An urban spirit that jumps between murals, turning paint into portals.",
+      personality:"Playful, rebellious",
+      role:"Mobility / illusions",
+      world_context:"Born from decades of protest art and late-night beats.",
+      trigger:"Tagging a wall with their sigil",
+      effect:"Animates graffiti creatures and creates escape paths",
+      first_message:"Walls talk back tonight.",
+      dialogue_style:"Rhythmic slang, musical",
+      dialogue_examples:"Pop the cap.\nBeat drops, colors run.\nSlip through the mural.",
+      outfit:"Hoodie with glowing spray nozzles",
+      aura:"Paint splashes that hover",
+      pal1:"Neon Magenta",
+      pal2:"Turquoise",
+      pal3:"Midnight Purple",
+      tags:"Character, Urban, Illusion",
+      art_prompt:"Ghostly graffiti artist emerging from neon mural, paint splashes, boombox vibes",
+      version:"1.0",
+      changelog:"Graffiti spirit template"
+    },
+    abilities:[
+      {name:"Mural Gate", type:"Active", cost:"1 Can", cooldown:"10s", target:"Surface", effect:"Opens a portal through any painted wall."},
+      {name:"Chromatic Doppel", type:"Illusion", cost:"2 Cans", cooldown:"12s", target:"Self", effect:"Creates painted clones that confuse trackers."}
+    ]
+  },
+  {
+    name:"⚙️ Gate • Clockwork Door",
+    data:{
+      card_series:"Time Forge",
+      card_type:"Gate",
+      card_name:"Clockwork Door",
+      card_alias:"Gearway",
+      element:"Time / Metal",
+      rarity:"Epic",
+      alignment:"Order",
+      core_energy:"Chrono Tension",
+      lore_description:"A doorway of interlocking gears that opens to precise timelines only.",
+      personality:"Punctual, strict",
+      role:"Temporal travel",
+      world_context:"Used by archivists to visit moments without disrupting causality.",
+      trigger:"Correct timecode entered",
+      effect:"Opens corridor to scheduled past/future",
+      first_message:"Tick. Tock. Access granted?",
+      dialogue_style:"Mechanical, concise",
+      dialogue_examples:"Time slot verified.\nUnauthorized entry denied.\nLubricate the hinge of fate.",
+      outfit:"—",
+      aura:"Floating clock hands and sparks",
+      pal1:"Brass",
+      pal2:"Silver",
+      pal3:"Teal Glow",
+      tags:"Gate, Time, Metal",
+      art_prompt:"Mechanical door with gears and clock hands, glowing timeline corridor",
+      version:"1.0",
+      changelog:"Clock gate template"
+    },
+    abilities:[
+      {name:"Scheduled Entry", type:"Utility", cost:"2 Ticks", cooldown:"—", target:"Party", effect:"Allows allies to step into a precise timestamp safely."},
+      {name:"Temporal Lock", type:"Reactive", cost:"1 Tick", cooldown:"10s", target:"Enemy", effect:"Freezes an enemy's cooldowns briefly as gears jam their timeline."}
+    ]
+  },
+  {
+    name:"🌀 State • Dream Loop",
+    data:{
+      card_series:"REM Circuit",
+      card_type:"State",
+      card_name:"Dream Loop",
+      card_alias:"Lucid Circuit",
+      element:"Mind / Ether",
+      rarity:"Epic",
+      alignment:"Neutral",
+      core_energy:"REM Current",
+      lore_description:"A trance where the user controls overlapping dreams to rewrite reality cues.",
+      personality:"Creative, eerie",
+      role:"Illusion / control",
+      world_context:"Used by sleepers who defend the city while their bodies rest in capsules.",
+      trigger:"Closed eyes + heartbeat sync",
+      effect:"Overlays dream logic onto the real world",
+      first_message:"Stay asleep. I will edit the scene.",
+      dialogue_style:"Soft, surreal",
+      dialogue_examples:"You forgot this fear.\nDoors melt open.\nGravity is optional now.",
+      outfit:"—",
+      aura:"Floating z-shaped sigils and particle trails",
+      pal1:"Lilac",
+      pal2:"Sky",
+      pal3:"Blush",
+      tags:"State, Dream, Control",
+      art_prompt:"Sleeper surrounded by dreamy holograms, bending reality, pastel neon",
+      version:"1.0",
+      changelog:"Dream state template"
+    },
+    abilities:[
+      {name:"Lucid Rewrite", type:"Active", cost:"6 REM", cooldown:"12s", target:"Zone", effect:"Changes environment rules for a short duration (gravity, exits, light)."},
+      {name:"Sleep Proxy", type:"Support", cost:"4 REM", cooldown:"8s", target:"Ally", effect:"Lets an ally act while their body rests, removing exhaustion debuffs."}
+    ]
   }
 ];
 
@@ -1430,6 +2029,7 @@ function applyTemplate(i){
       pal1:"pal1",
       pal2:"pal2",
       pal3:"pal3",
+      art_prompt:"art_prompt",
       tags:"tags",
       version:"version",
       changelog:"changelog"
@@ -1637,6 +2237,94 @@ function importFromBox(){
     switchLeftTab("library");
   }catch{
     toast("❌ JSON לא תקין");
+  }
+}
+
+/* ---------- AI Image Prompt / API ---------- */
+function buildImagePrompt(card){
+  const lines = [];
+  lines.push(`Create a cinematic, high-detail illustration for a futuristic mystic trading card.`);
+  lines.push(`Name: ${card.card_name || "Unknown"} (${card.card_type || "Concept"}) from series ${card.card_series || "—"}. Alias: ${card.card_alias || "—"}. Core energy: ${card.core_energy || "—"}. Element: ${card.element || "—"}. Rarity: ${card.rarity || "—"}. Alignment: ${card.alignment || "—"}.`);
+  const loreBits = [card.lore.description, card.lore.world_context, card.lore.personality].map(safeTrim).filter(Boolean).join(" ");
+  if(loreBits) lines.push(`Lore + personality: ${loreBits}`);
+  const abilitiesText = (card.abilities||[]).slice(0,3).map(a=>`${a.name}: ${a.effect}`).join(" | ");
+  if(abilitiesText) lines.push(`Signature abilities: ${abilitiesText}`);
+  const visual = card.visual_style || {};
+  const palettes = (visual.color_palette||[]).filter(Boolean).join(", ");
+  const styleHints = [visual.outfit, visual.aura, visual.art_prompt].map(safeTrim).filter(Boolean).join(" | ");
+  if(styleHints) lines.push(`Visual style: ${styleHints}`);
+  if(palettes) lines.push(`Color palette to emphasize: ${palettes}.`);
+  lines.push(`Composition: single character/subject, no UI text, dramatic lighting, ultra-detailed, ready to place inside a card frame.`);
+  return lines.join("\n");
+}
+
+function updateAIPrompt(card){
+  const c = card || buildCardFromForm();
+  const prompt = buildImagePrompt(c);
+  if($("aiPrompt")) $("aiPrompt").value = prompt;
+  return prompt;
+}
+
+function setAIStatus(msg, loading=false){
+  const st = $("aiStatus");
+  if(!st) return;
+  const dot = st.querySelector(".dot");
+  const text = st.querySelector(".msg");
+  if(text) text.textContent = msg;
+  if(dot) dot.style.background = loading ? "var(--warn)" : "var(--ok)";
+  const btn = $("btnSendAI");
+  if(btn) btn.disabled = loading;
+}
+
+async function requestAIImage(){
+  const {card, problems} = refreshJSONLive();
+  if(problems.length){
+    toast("⚠️ מלא שדות חובה לפני שליחה ל-API");
+    return;
+  }
+  const apiKey = safeTrim($("ai_api_key")?.value || "");
+  if(!apiKey){
+    toast("⚠️ הזן OpenAI API Key");
+    setAIStatus("ממתין למפתח API", false);
+    return;
+  }
+  persistApiKey();
+
+  const model = $("ai_model")?.value || settings.aiModel || "gpt-image-1";
+  settings.aiModel = model;
+  saveSettings();
+
+  const prompt = updateAIPrompt(card);
+  setAIStatus("⏳ שולח בקשה ל-OpenAI…", true);
+
+  try{
+    const res = await fetch("https://api.openai.com/v1/images/generations",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":`Bearer ${apiKey}`
+      },
+      body: JSON.stringify({ model, prompt, size:"1024x1024", response_format:"url" })
+    });
+    if(!res.ok){
+      const errText = await res.text();
+      throw new Error(errText || res.statusText);
+    }
+    const data = await res.json();
+    const payload = data?.data?.[0];
+    const img = payload?.url || (payload?.b64_json ? `data:image/png;base64,${payload.b64_json}` : null);
+    if(!img) throw new Error("לא התקבלה תמונה מה-API");
+    const imgEl = $("aiImage");
+    if(imgEl){
+      imgEl.src = img;
+      imgEl.style.display = "block";
+    }
+    setAIStatus("✅ תמונה התקבלה מה-API", false);
+    toast("🖼️ תמונה נוצרה בהצלחה");
+  }catch(err){
+    console.error(err);
+    setAIStatus(`❌ ${err.message}`, false);
+    toast("❌ שגיאה בבקשת ה-API");
   }
 }
 
@@ -1856,6 +2544,7 @@ function loadSettings(){
   $("set_cw").value = settings.canvasW;
   $("set_ch").value = settings.canvasH;
   $("set_autodraft").value = settings.autoDraftSeconds;
+  if($("ai_model")) $("ai_model").value = settings.aiModel || "gpt-image-1";
   applyCanvasSize();
 }
 function saveSettings(){
@@ -1865,10 +2554,28 @@ function applySettings(){
   settings.canvasW = Number($("set_cw").value) || 1600;
   settings.canvasH = Number($("set_ch").value) || 900;
   settings.autoDraftSeconds = Number($("set_autodraft").value) || 3;
+  settings.aiModel = $("ai_model")?.value || settings.aiModel;
   saveSettings();
   applyCanvasSize();
   startAutoDraft();
   toast("✅ הגדרות הוחלו");
+}
+
+function loadApiKey(){
+  const saved = localStorage.getItem(K_APIKEY);
+  if(saved && $("ai_api_key")){
+    $("ai_api_key").value = saved;
+    if($("aiRemember")) $("aiRemember").checked = true;
+  }
+}
+function persistApiKey(){
+  const remember = $("aiRemember")?.checked;
+  if(!remember){
+    localStorage.removeItem(K_APIKEY);
+    return;
+  }
+  const key = safeTrim($("ai_api_key")?.value || "");
+  if(key) localStorage.setItem(K_APIKEY, key);
 }
 
 /* ---------- Keyboard shortcuts ---------- */
@@ -1930,6 +2637,17 @@ function wire(){
   $("btnDownloadOne").onclick = ()=>exportOne();
   $("btnDownloadAll").onclick = ()=>exportAll();
   $("btnCopyAll").onclick = ()=>copyToClipboard(JSON.stringify(library, null, 2));
+  $("btnSendAI").onclick = ()=>requestAIImage();
+  const modelSel = $("ai_model");
+  if(modelSel){
+    modelSel.addEventListener("change", ()=>{
+      settings.aiModel = modelSel.value;
+      saveSettings();
+      updateAIPrompt();
+    });
+  }
+  $("ai_api_key")?.addEventListener("input", ()=>{ if($("aiRemember")?.checked) persistApiKey(); });
+  $("aiRemember")?.addEventListener("change", persistApiKey);
 
   // Search filter
   $("q").addEventListener("input", renderLibrary);
@@ -1987,6 +2705,7 @@ function init(){
   tick(); setInterval(tick, 1000);
 
   loadSettings();
+  loadApiKey();
   loadLibrary();
 
   // Active card restore
