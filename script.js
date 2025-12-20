@@ -3250,6 +3250,42 @@ const TEMPLATES = [
       {name:"Branch Shield", type:"Support", cost:"2 Guard", cooldown:"9s", target:"Allies", effect:"Reduces probability-based damage against allies following the chosen plan."},
       {name:"Interference Trap", type:"Active", cost:"1 Guard", cooldown:"8s", target:"Enemy", effect:"Stuns entities attempting to alter timelines or hack predictions."}
     ]
+  },
+  {
+    name:"🟣 TorahMatrix • Visual Production Script",
+    data:{
+      card_series:"TorahMatrix",
+      card_type:"Design Brief",
+      card_name:"TorahMatrix — Master & Asset Packs",
+      card_alias:"Holy Matrix Art Script",
+      element:"Cosmic Purple / Gold",
+      rarity:"Mythic",
+      alignment:"Sacred-Tech",
+      core_energy:"Torah Signal",
+      lore_description:"A ready-to-produce visual script that outlines every hero, special edition, card kit, and asset needed for the TorahMatrix universe.",
+      personality:"Meticulous, ceremonial, production-ready",
+      role:"Art direction checklist",
+      world_context:"Used by artists to keep the TorahMatrix aesthetic coherent across hero shots, story banners, cards, UI, and iconography.",
+      trigger:"Need a full pack of visuals in one brief",
+      effect:"Delivers numbered prompts for all required assets",
+      first_message:"TorahMatrix production script loaded.",
+      dialogue_style:"Clear checklist with sacred-cyber flavor",
+      dialogue_examples:"Start with TM-HERO-01 main hero background.\nInclude falling Hebrew letters and gold lightning.\nFinish with repo layout under TorahMatrix/ tree.",
+      outfit:"—",
+      aura:"Black-purple cosmic glow with gold sparks",
+      pal1:"Deep Purple",
+      pal2:"Cosmic Black",
+      pal3:"Laser Gold",
+      tags:"TorahMatrix, Art-Pack, Assets, Brief",
+      art_prompt:"🟣✨ TORAHMATRIX — MASTER PACK\n1. TM-HERO-01 — Main Hero Background (1920×1080)\n   • רקע שחור־סגול עמוק עם ענני אבק קוסמי\n   • אותיות עבריות זוהרות נופלות כמו קוד מטריקס קדוש\n   • ברקים זהב־לייזר מלמעלה למרכז + Portal Glow במרכז\n   • לוגו TorahMatrix במרכז + קווי קבלה דקים של עשר הספירות\n2. TM-HERO-02 — Vertical Holy Code (1080×1920)\n   • גרדיאנט סגול לילה, אותיות עבריות בצורת ספירלה\n   • Beam זהב דק מחבר קרקע לשמים, לוגו קטן למעלה\n   • חותמת \"Holy Matrix Sequence\" בתחתית\n3. TM-HERO-03 — Torah Rings (2048×512)\n   • פס רחב שחור־כחול קוסמי, 7 טבעות אנרגיה זהב־סגול\n   • בתוך הטבעות ראשי תיבות TM, ניצוצות בצורת האות י׳\n4. TM-HERO-04 — Neon Seal (512×512)\n   • עיגול שחור מבריק, קצוות זהב־ניאון, אותיות TM חצובות\n   • הילה סגולה, ניצוצי אנרגיה, סימון ✡️ קטן למטה\n⚡ TORAHMATRIX — SPECIAL EDITIONS PACK\n5. TM-GOLD-01 — Dark Holy Code Edition\n   • אותיות זהב נופלות, Glow סביב פסוקים, רקע שחור עמוק\n   • חתימה: \"TorahMatrix — Golden Revelation\"\n6. TM-COSMIC-01 — Kabbalah Spheres Edition\n   • 10 ספירות זוהרות בצבעים קבליים, קווי חיבור כספיים\n   • לוגו TM במרכז העץ, ענני אנרגיה סגולים־כחולים\n7. TM-ASCENSION-01 — SparKing Torah Burst\n   • ברקים אלקטרוניים, טבעות אור סביב לוגו TM\n   • Glow לבן־זהב והתגלות, מסגרת לייזר יוקרתית\n🎨 TORAHMATRIX — CARD KIT\n8. CARD-TM-00 — Creation Code — אור ראשון פורץ מהחושך, אותיות בראשית ניאון, מסגרת זהב קדוש, רקע קוסמי\n9. CARD-TM-01 — Ten Divine Statements — 10 קווים אנרגטיים שמיים→ארץ, פסוקים בכתב נופל, לוגו TM קטן\n10. CARD-TM-02 — Sefirot Flow — עשר ספירות זהב על סגול כהה, מסלול זרימת אור\n11. CARD-TM-03 — Torah Paths Matrix — 4 מסלולי תורה: פשט/רמז/דרש/סוד בצבעים שונים\n🧰 TORAHMATRIX — Assets Pack\n12. TM-TXT-01 — Hebrew Dust Texture\n13. TM-TXT-02 — Gold Sparks Grid\n14. TM-TXT-03 — Soft Purple Clouds\n15. TM-TXT-04 — Holy Lightning Layer\n16. TM-BTN-01 — כפתור זהב “ENTER MATRIX”\n17. TM-LINE-01 — קו הפרדה סגול־זהב\n18. TM-FRAME-01 — מסגרת לייזר קדושה\n19. Icon-Sefirot\n20. Icon-Hebrew-Aleph\n21. Icon-Hebrew-Tav\n22. Icon-Lightning-Holy\n23. Icon-Cosmic-Dot\n🚀 מבנה מאגר גיט מומלץ\nTorahMatrix/\n├── README.md\n├── LICENSE\n├── assets/ (hero, banners, icons, cards, textures)\n├── docs/ (index, design-system, color-sheet, card-template, logo-guidelines)\n└── pages/ (index, matrix, sefiros, gallery)",
+      version:"1.0",
+      changelog:"Added TorahMatrix production script"
+    },
+    abilities:[
+      {name:"Master Pack", type:"Brief", cost:"0", cooldown:"—", target:"Artists", effect:"Summarizes TM-HERO-01..04 with full compositions for home, story, banner, and icon usage."},
+      {name:"Special & Card Kits", type:"Brief", cost:"0", cooldown:"—", target:"Designers", effect:"Details TM-GOLD/COSMIC/ASCENSION editions plus CARD-TM-00..03 titles and visual beats ready for generation."},
+      {name:"Assets & Repo", type:"Brief", cost:"0", cooldown:"—", target:"Builders", effect:"Lists textures, UI elements, icons, and proposes TorahMatrix/ repository layout for quick scaffolding."}
+    ]
   }
 ];
 
